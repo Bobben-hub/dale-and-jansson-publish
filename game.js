@@ -143,6 +143,126 @@ player.position.y = 1;
 
 scene.add(player);
 
+// ========================================
+// PLAYER MOVEMENT
+// ========================================
+
+const keys = {};
+
+window.addEventListener(
+    "keydown",
+    (event) => {
+
+        keys[event.key.toLowerCase()] = true;
+
+    }
+);
+
+window.addEventListener(
+    "keyup",
+    (event) => {
+
+        keys[event.key.toLowerCase()] = false;
+
+    }
+);
+
+
+// Spelarens hastighet
+const playerSpeed = 0.08;
+
+
+// ========================================
+// UPDATE PLAYER
+// ========================================
+
+function updatePlayer() {
+
+    let moveX = 0;
+    let moveZ = 0;
+
+
+    // WASD
+    if (keys["w"]) {
+        moveZ -= 1;
+    }
+
+    if (keys["s"]) {
+        moveZ += 1;
+    }
+
+    if (keys["a"]) {
+        moveX -= 1;
+    }
+
+    if (keys["d"]) {
+        moveX += 1;
+    }
+
+
+    // Gör diagonal rörelse lika snabb
+    if (
+        moveX !== 0 ||
+        moveZ !== 0
+    ) {
+
+        const length =
+            Math.sqrt(
+                moveX * moveX +
+                moveZ * moveZ
+            );
+
+        moveX /= length;
+        moveZ /= length;
+
+
+        player.position.x +=
+            moveX * playerSpeed;
+
+        player.position.z +=
+            moveZ * playerSpeed;
+
+
+        // Spelaren tittar åt det håll
+        // den går
+        player.rotation.y =
+            Math.atan2(
+                moveX,
+                moveZ
+            );
+
+    }
+
+
+    // ====================================
+    // OFFICE BOUNDARIES
+    // ====================================
+
+    const limitX = 18;
+    const limitZ = 13;
+
+
+    player.position.x =
+        Math.max(
+            -limitX,
+            Math.min(
+                limitX,
+                player.position.x
+            )
+        );
+
+
+    player.position.z =
+        Math.max(
+            -limitZ,
+            Math.min(
+                limitZ,
+                player.position.z
+            )
+        );
+
+}
+
 
 // ========================================
 // MENU
@@ -924,6 +1044,53 @@ function animate() {
     requestAnimationFrame(
         animate
     );
+
+
+    // Uppdatera spelaren
+    updatePlayer();
+
+
+    // ====================================
+    // CAMERA FOLLOW
+    // ====================================
+
+    const cameraTargetX =
+        player.position.x;
+
+    const cameraTargetY =
+        player.position.y + 8;
+
+    const cameraTargetZ =
+        player.position.z + 10;
+
+
+    camera.position.x +=
+        (
+            cameraTargetX -
+            camera.position.x
+        ) * 0.08;
+
+
+    camera.position.y +=
+        (
+            cameraTargetY -
+            camera.position.y
+        ) * 0.08;
+
+
+    camera.position.z +=
+        (
+            cameraTargetZ -
+            camera.position.z
+        ) * 0.08;
+
+
+    camera.lookAt(
+        player.position.x,
+        player.position.y,
+        player.position.z
+    );
+
 
     renderer.render(
         scene,
