@@ -15,6 +15,11 @@ const SERVER_URL =
 
 let socket = null;
 
+// ========================================
+// MULTIPLAYER PLAYERS
+// ========================================
+
+const otherPlayers = new Map();
 
 // ========================================
 // SCENE
@@ -142,6 +147,82 @@ const player =
 player.position.y = 1;
 
 scene.add(player);
+
+// ========================================
+// CREATE OTHER PLAYER
+// ========================================
+
+function createOtherPlayer(data) {
+
+    if (otherPlayers.has(data.playerId)) {
+        return;
+    }
+
+    const geometry =
+        new THREE.CapsuleGeometry(
+            0.5,
+            1.2,
+            4,
+            8
+        );
+
+    const material =
+        new THREE.MeshStandardMaterial({
+            color: 0x3366ff
+        });
+
+    const otherPlayer =
+        new THREE.Mesh(
+            geometry,
+            material
+        );
+
+    otherPlayer.position.set(
+        data.x,
+        data.y,
+        data.z
+    );
+
+    otherPlayer.rotation.y =
+        data.rotation || 0;
+
+    scene.add(
+        otherPlayer
+    );
+
+    otherPlayers.set(
+        data.playerId,
+        otherPlayer
+    );
+}
+
+// ========================================
+// UPDATE OTHER PLAYER
+// ========================================
+
+function updateOtherPlayer(data) {
+
+    const otherPlayer =
+        otherPlayers.get(
+            data.playerId
+        );
+
+    if (!otherPlayer) {
+
+        createOtherPlayer(data);
+
+        return;
+    }
+
+    otherPlayer.position.set(
+        data.x,
+        data.y,
+        data.z
+    );
+
+    otherPlayer.rotation.y =
+        data.rotation || 0;
+}
 
 // ========================================
 // PLAYER MOVEMENT
@@ -607,6 +688,37 @@ moveZ +=
 
     }
 
+// ====================================
+// SEND POSITION TO SERVER
+// ====================================
+
+if (
+    socket &&
+    socket.readyState ===
+    WebSocket.OPEN
+) {
+
+    socket.send(
+        JSON.stringify({
+            type:
+                "playerMove",
+
+            x:
+                player.position.x,
+
+            y:
+                player.position.y,
+
+            z:
+                player.position.z,
+
+            rotation:
+                player.rotation.y
+        })
+    );
+
+}
+
 
     // ====================================
     // OFFICE BOUNDARIES
@@ -791,6 +903,37 @@ function connectToServer(
                 );
 
             }
+
+// ==========================
+// ANDRA SPELARE
+// ==========================
+
+if (
+    data.type ===
+    "playerJoined"
+) {
+
+    createOtherPlayer(
+        data
+    );
+
+}
+
+
+// ==========================
+// SPELARE RÖR SIG
+// ==========================
+
+if (
+    data.type ===
+    "playerMove"
+) {
+
+    updateOtherPlayer(
+        data
+    );
+
+}
 
 
             // ==========================
