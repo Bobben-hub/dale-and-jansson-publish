@@ -446,6 +446,37 @@ menu.appendChild(
     playerCount
 );
 
+// ========================================
+// STARTA SPEL
+// ========================================
+
+const startGame =
+    document.createElement(
+        "button"
+    );
+
+startGame.textContent =
+    "STARTA SPEL";
+
+startGame.style.fontSize =
+    "20px";
+
+startGame.style.padding =
+    "15px 30px";
+
+startGame.style.margin =
+    "20px";
+
+startGame.onclick =
+    () => {
+
+        startGameScreen();
+
+    };
+
+menu.appendChild(
+    startGame
+);
 
     const leave =
         document.createElement(
@@ -492,6 +523,374 @@ function updatePlayerCount(
 
 }
 
+// ========================================
+// START GAME
+// ========================================
+
+function startGameScreen() {
+
+    menu.style.display =
+        "none";
+
+    createOffice();
+
+}
+
+// ========================================
+// OFFICE WORLD
+// ========================================
+
+function createOffice() {
+
+    // ----------------------------
+    // GOLV
+    // ----------------------------
+
+    const floorGeometry =
+        new THREE.BoxGeometry(
+            40,
+            0.5,
+            30
+        );
+
+    const floorMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x555555
+        });
+
+    const officeFloor =
+        new THREE.Mesh(
+            floorGeometry,
+            floorMaterial
+        );
+
+    officeFloor.position.set(
+        0,
+        -0.25,
+        0
+    );
+
+    scene.add(
+        officeFloor
+    );
+
+
+    // ----------------------------
+    // VÄGGAR
+    // ----------------------------
+
+    const wallMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xe0d8c8
+        });
+
+
+    // Bakvägg
+    createWall(
+        0,
+        3,
+        -15,
+        40,
+        6,
+        0.5,
+        wallMaterial
+    );
+
+
+    // Framvägg
+    createWall(
+        0,
+        3,
+        15,
+        40,
+        6,
+        0.5,
+        wallMaterial
+    );
+
+
+    // Vänster vägg
+    createWall(
+        -20,
+        3,
+        0,
+        0.5,
+        6,
+        30,
+        wallMaterial
+    );
+
+
+    // Höger vägg
+    createWall(
+        20,
+        3,
+        0,
+        0.5,
+        6,
+        30,
+        wallMaterial
+    );
+
+
+    // ----------------------------
+    // SKRIVBORD
+    // ----------------------------
+
+    createDesk(
+        -8,
+        0,
+        -5
+    );
+
+    createDesk(
+        0,
+        0,
+        -5
+    );
+
+    createDesk(
+        8,
+        0,
+        -5
+    );
+
+
+    createDesk(
+        -8,
+        0,
+        5
+    );
+
+    createDesk(
+        0,
+        0,
+        5
+    );
+
+    createDesk(
+        8,
+        0,
+        5
+    );
+
+}
+
+
+// ========================================
+// WALL
+// ========================================
+
+function createWall(
+    x,
+    y,
+    z,
+    width,
+    height,
+    depth,
+    material
+) {
+
+    const geometry =
+        new THREE.BoxGeometry(
+            width,
+            height,
+            depth
+        );
+
+    const wall =
+        new THREE.Mesh(
+            geometry,
+            material
+        );
+
+    wall.position.set(
+        x,
+        y,
+        z
+    );
+
+    scene.add(
+        wall
+    );
+
+}
+
+
+// ========================================
+// DESK
+// ========================================
+
+function createDesk(
+    x,
+    y,
+    z
+) {
+
+    const woodMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x70452a
+        });
+
+
+    // Bordsskiva
+    const top =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                5,
+                0.4,
+                2.5
+            ),
+            woodMaterial
+        );
+
+    top.position.set(
+        x,
+        2,
+        z
+    );
+
+    scene.add(
+        top
+    );
+
+
+    // Ben
+    const legGeometry =
+        new THREE.BoxGeometry(
+            0.3,
+            2,
+            0.3
+        );
+
+    const legPositions = [
+        [-2, 1, -0.9],
+        [2, 1, -0.9],
+        [-2, 1, 0.9],
+        [2, 1, 0.9]
+    ];
+
+
+    for (
+        const pos of legPositions
+    ) {
+
+        const leg =
+            new THREE.Mesh(
+                legGeometry,
+                woodMaterial
+            );
+
+        leg.position.set(
+            x + pos[0],
+            pos[1],
+            z + pos[2]
+        );
+
+        scene.add(
+            leg
+        );
+
+    }
+
+
+    // ----------------------------
+    // GAMMAL DATOR
+    // ----------------------------
+
+    createComputer(
+        x,
+        2.3,
+        z
+    );
+
+}
+
+
+// ========================================
+// OLD COMPUTER
+// ========================================
+
+function createComputer(
+    x,
+    y,
+    z
+) {
+
+    const computerMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x777777
+        });
+
+
+    // Skärm
+    const screen =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.8,
+                1.5,
+                0.6
+            ),
+            computerMaterial
+        );
+
+    screen.position.set(
+        x,
+        y,
+        z
+    );
+
+    scene.add(
+        screen
+    );
+
+
+    // Skärmglas
+    const glass =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.4,
+                1.05,
+                0.08
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x222222
+            })
+        );
+
+    glass.position.set(
+        x,
+        y,
+        z + 0.32
+    );
+
+    scene.add(
+        glass
+    );
+
+
+    // Tangentbord
+    const keyboard =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.8,
+                0.15,
+                0.7
+            ),
+            computerMaterial
+        );
+
+    keyboard.position.set(
+        x,
+        2.15,
+        z + 1
+    );
+
+    scene.add(
+        keyboard
+    );
+
+}
 
 // ========================================
 // RESIZE
