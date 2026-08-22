@@ -171,6 +171,356 @@ window.addEventListener(
 // Spelarens hastighet
 const playerSpeed = 0.08;
 
+// ========================================
+// MOBILE JOYSTICK
+// ========================================
+
+const joystick = {
+    active: false,
+    pointerId: null,
+    startX: 0,
+    startY: 0,
+    x: 0,
+    y: 0,
+    radius: 65
+};
+
+const joystickCanvas =
+    document.createElement("canvas");
+
+joystickCanvas.id =
+    "joystickCanvas";
+
+joystickCanvas.style.position =
+    "fixed";
+
+joystickCanvas.style.left =
+    "20px";
+
+joystickCanvas.style.bottom =
+    "20px";
+
+joystickCanvas.style.width =
+    "150px";
+
+joystickCanvas.style.height =
+    "150px";
+
+joystickCanvas.style.zIndex =
+    "1000";
+
+joystickCanvas.style.touchAction =
+    "none";
+
+document.body.appendChild(
+    joystickCanvas
+);
+
+const joystickCtx =
+    joystickCanvas.getContext("2d");
+
+
+function resizeJoystick() {
+
+    const scale =
+        window.devicePixelRatio || 1;
+
+    joystickCanvas.width =
+        150 * scale;
+
+    joystickCanvas.height =
+        150 * scale;
+
+    joystickCtx.setTransform(
+        scale,
+        0,
+        0,
+        scale,
+        0,
+        0
+    );
+
+}
+
+resizeJoystick();
+
+
+function drawJoystick() {
+
+    joystickCtx.clearRect(
+        0,
+        0,
+        150,
+        150
+    );
+
+
+    // Yttre cirkel
+    joystickCtx.beginPath();
+
+    joystickCtx.arc(
+        75,
+        75,
+        65,
+        0,
+        Math.PI * 2
+    );
+
+    joystickCtx.fillStyle =
+        "rgba(0,0,0,0.25)";
+
+    joystickCtx.fill();
+
+
+    // Inre spak
+    joystickCtx.beginPath();
+
+    joystickCtx.arc(
+        75 + joystick.x * 45,
+        75 + joystick.y * 45,
+        25,
+        0,
+        Math.PI * 2
+    );
+
+    joystickCtx.fillStyle =
+        "rgba(255,255,255,0.65)";
+
+    joystickCtx.fill();
+
+}
+
+drawJoystick();
+
+
+function joystickPosition(
+    event
+) {
+
+    const rect =
+        joystickCanvas.getBoundingClientRect();
+
+    const x =
+        event.clientX -
+        rect.left;
+
+    const y =
+        event.clientY -
+        rect.top;
+
+    const centerX = 75;
+    const centerY = 75;
+
+    let dx =
+        x - centerX;
+
+    let dy =
+        y - centerY;
+
+
+    const distance =
+        Math.sqrt(
+            dx * dx +
+            dy * dy
+        );
+
+
+    if (
+        distance >
+        joystick.radius
+    ) {
+
+        dx =
+            dx /
+            distance *
+            joystick.radius;
+
+        dy =
+            dy /
+            distance *
+            joystick.radius;
+
+    }
+
+
+    joystick.x =
+        dx /
+        joystick.radius;
+
+    joystick.y =
+        dy /
+        joystick.radius;
+
+}
+
+
+joystickCanvas.addEventListener(
+    "pointerdown",
+    (event) => {
+
+        joystick.active =
+            true;
+
+        joystick.pointerId =
+            event.pointerId;
+
+        joystickCanvas.setPointerCapture(
+            event.pointerId
+        );
+
+        joystickPosition(
+            event
+        );
+
+    }
+);
+
+
+joystickCanvas.addEventListener(
+    "pointermove",
+    (event) => {
+
+        if (
+            !joystick.active ||
+            event.pointerId !==
+            joystick.pointerId
+        ) {
+            return;
+        }
+
+        joystickPosition(
+            event
+        );
+
+    }
+);
+
+
+function releaseJoystick() {
+
+    joystick.active =
+        false;
+
+    joystick.pointerId =
+        null;
+
+    joystick.x = 0;
+    joystick.y = 0;
+
+}
+
+
+joystickCanvas.addEventListener(
+    "pointerup",
+    releaseJoystick
+);
+
+joystickCanvas.addEventListener(
+    "pointercancel",
+    releaseJoystick
+);
+
+joystickCanvas.addEventListener(
+    "lostpointercapture",
+    releaseJoystick
+);
+
+// ========================================
+// XBOX / GAMEPAD
+// ========================================
+
+let gamepadIndex = null;
+
+
+window.addEventListener(
+    "gamepadconnected",
+    (event) => {
+
+        gamepadIndex =
+            event.gamepad.index;
+
+        console.log(
+            "Xbox/Gamepad ansluten"
+        );
+
+    }
+);
+
+
+window.addEventListener(
+    "gamepaddisconnected",
+    (event) => {
+
+        if (
+            gamepadIndex ===
+            event.gamepad.index
+        ) {
+
+            gamepadIndex =
+                null;
+
+        }
+
+    }
+);
+
+
+function getGamepadInput() {
+
+    let x = 0;
+    let y = 0;
+
+
+    if (
+        gamepadIndex !==
+        null
+    ) {
+
+        const pads =
+            navigator.getGamepads();
+
+        const pad =
+            pads[
+                gamepadIndex
+            ];
+
+
+        if (pad) {
+
+            x =
+                pad.axes[0] || 0;
+
+            y =
+                pad.axes[1] || 0;
+
+        }
+
+    }
+
+
+    // Ta bort små driftvärden
+    if (
+        Math.abs(x) <
+        0.15
+    ) {
+        x = 0;
+    }
+
+    if (
+        Math.abs(y) <
+        0.15
+    ) {
+        y = 0;
+    }
+
+
+    return {
+        x,
+        y
+    };
+
+}
+
 
 // ========================================
 // UPDATE PLAYER
@@ -198,6 +548,30 @@ function updatePlayer() {
     if (keys["d"]) {
         moveX += 1;
     }
+
+// ====================================
+// MOBILE JOYSTICK
+// ====================================
+
+moveX +=
+    joystick.x;
+
+moveZ +=
+    joystick.y;
+
+
+// ====================================
+// XBOX
+// ====================================
+
+const gamepad =
+    getGamepadInput();
+
+moveX +=
+    gamepad.x;
+
+moveZ +=
+    gamepad.y;
 
 
     // Gör diagonal rörelse lika snabb
