@@ -725,6 +725,51 @@ function getGamepadInput() {
 
 }
 
+// ========================================
+// XBOX CAMERA
+// ========================================
+
+function getGamepadLook() {
+
+    let x = 0;
+    let y = 0;
+
+    if (gamepadIndex !== null) {
+
+        const pads =
+            navigator.getGamepads();
+
+        const pad =
+            pads[gamepadIndex];
+
+        if (pad) {
+
+            // Höger analogspak
+            x =
+                pad.axes[2] || 0;
+
+            y =
+                pad.axes[3] || 0;
+
+        }
+
+    }
+
+    // Deadzone
+    if (Math.abs(x) < 0.15) {
+        x = 0;
+    }
+
+    if (Math.abs(y) < 0.15) {
+        y = 0;
+    }
+
+    return {
+        x,
+        y
+    };
+
+}
 
 // ========================================
 // UPDATE PLAYER
@@ -734,6 +779,30 @@ function updatePlayer() {
 
     let moveX = 0;
     let moveZ = 0;
+
+// ====================================
+// XBOX CAMERA
+// ====================================
+
+const gamepadLook =
+    getGamepadLook();
+
+cameraYaw -=
+    gamepadLook.x * 0.04;
+
+cameraPitch -=
+    gamepadLook.y * 0.04;
+
+
+// Begränsa upp/ned
+cameraPitch =
+    Math.max(
+        -Math.PI / 2,
+        Math.min(
+            Math.PI / 2,
+            cameraPitch
+        )
+    );
 
 
     // WASD
