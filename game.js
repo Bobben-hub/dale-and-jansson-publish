@@ -1681,27 +1681,37 @@ createWall(
     }
 
 
-    // ----------------------------
-    // FRAMVÄGG
-    // ----------------------------
+// ----------------------------
+// FRAMVÄGG
+// ----------------------------
 
-    for (
-        let x = -18;
-        x <= 18;
-        x += 4
+// Panelerna ska INTE täcka dörröppningen.
+
+for (
+    let x = -18;
+    x <= 18;
+    x += 4
+) {
+
+    // Lämna öppet runt dörren
+    if (
+        x > -4 &&
+        x < 4
     ) {
-
-        createWall(
-            x,
-            2.6,
-            14.70,
-            3.7,
-            4.6,
-            0.06,
-            panelMaterial
-        );
-
+        continue;
     }
+
+    createWall(
+        x,
+        2.6,
+        14.70,
+        3.7,
+        4.6,
+        0.06,
+        panelMaterial
+    );
+
+}
 
 
     // ----------------------------
