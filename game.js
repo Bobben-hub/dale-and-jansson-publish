@@ -44,11 +44,20 @@ const camera =
         0.1,
         1000
     );
+    
+    // ========================================
+// FIRST PERSON LOOK
+// ========================================
+
+let cameraYaw = 0;
+let cameraPitch = 0;
+
+const lookSensitivity = 0.005;
 
 camera.position.set(
     0,
-    5,
-    10
+    1.6,
+    0
 );
 
 
@@ -98,27 +107,7 @@ scene.add(light);
 // FLOOR
 // ========================================
 
-const floorGeometry =
-    new THREE.PlaneGeometry(
-        100,
-        100
-    );
 
-const floorMaterial =
-    new THREE.MeshStandardMaterial({
-        color: 0x777777
-    });
-
-const floor =
-    new THREE.Mesh(
-        floorGeometry,
-        floorMaterial
-    );
-
-floor.rotation.x =
-    -Math.PI / 2;
-
-scene.add(floor);
 
 
 // ========================================
@@ -146,7 +135,15 @@ const player =
 
 player.position.y = 1;
 
-scene.add(player);
+// Spelarens kropp finns fortfarande i världen
+// så andra spelare kan se den.
+// Vi gömmer den bara från vår egen kamera.
+
+scene.add(
+    player
+);
+
+player.visible = false;
 
 // ========================================
 // CREATE OTHER PLAYER
@@ -507,6 +504,132 @@ joystickCanvas.addEventListener(
 );
 
 // ========================================
+// MOBILE TOUCH CAMERA
+// ========================================
+
+let lookActive = false;
+let lookPointerId = null;
+
+let lastLookX = 0;
+let lastLookY = 0;
+
+
+window.addEventListener(
+    "pointerdown",
+    (event) => {
+
+        // Vänstra sidan är joystick
+        if (
+            event.clientX <
+            window.innerWidth / 2
+        ) {
+            return;
+        }
+
+        lookActive = true;
+
+        lookPointerId =
+            event.pointerId;
+
+        lastLookX =
+            event.clientX;
+
+        lastLookY =
+            event.clientY;
+
+    }
+);
+
+
+window.addEventListener(
+    "pointermove",
+    (event) => {
+
+        if (
+            !lookActive ||
+            event.pointerId !==
+            lookPointerId
+        ) {
+            return;
+        }
+
+        const deltaX =
+            event.clientX -
+            lastLookX;
+
+        const deltaY =
+            event.clientY -
+            lastLookY;
+
+
+        lastLookX =
+            event.clientX;
+
+        lastLookY =
+            event.clientY;
+
+
+        cameraYaw -=
+            deltaX *
+            lookSensitivity;
+
+        cameraPitch -=
+            deltaY *
+            lookSensitivity;
+
+
+        // Begränsa hur långt upp/ned
+        // man kan titta
+
+        cameraPitch =
+            Math.max(
+                -Math.PI / 2,
+                Math.min(
+                    Math.PI / 2,
+                    cameraPitch
+                )
+            );
+
+    }
+);
+
+
+window.addEventListener(
+    "pointerup",
+    (event) => {
+
+        if (
+            event.pointerId ===
+            lookPointerId
+        ) {
+
+            lookActive = false;
+            lookPointerId = null;
+
+        }
+
+    }
+);
+
+
+window.addEventListener(
+    "pointercancel",
+    (event) => {
+
+        if (
+            event.pointerId ===
+            lookPointerId
+        ) {
+
+            lookActive = false;
+            lookPointerId = null;
+
+        }
+
+    }
+);
+
+// ========================================
 // XBOX / GAMEPAD
 // ========================================
 
@@ -615,20 +738,20 @@ function updatePlayer() {
 
     // WASD
     if (keys["w"]) {
-        moveZ -= 1;
-    }
+    moveZ += 1;
+}
 
-    if (keys["s"]) {
-        moveZ += 1;
-    }
+if (keys["s"]) {
+    moveZ -= 1;
+}
 
-    if (keys["a"]) {
-        moveX -= 1;
-    }
+if (keys["a"]) {
+    moveX += 1;
+}
 
-    if (keys["d"]) {
-        moveX += 1;
-    }
+if (keys["d"]) {
+    moveX -= 1;
+}
 
 // ====================================
 // MOBILE JOYSTICK
@@ -671,20 +794,33 @@ moveZ +=
         moveZ /= length;
 
 
-        player.position.x +=
-            moveX * playerSpeed;
+        const forwardX =
+    Math.sin(cameraYaw);
 
-        player.position.z +=
-            moveZ * playerSpeed;
+const forwardZ =
+    Math.cos(cameraYaw);
+
+const rightX =
+    Math.cos(cameraYaw);
+
+const rightZ =
+    -Math.sin(cameraYaw);
 
 
-        // Spelaren tittar åt det håll
-        // den går
-        player.rotation.y =
-            Math.atan2(
-                moveX,
-                moveZ
-            );
+player.position.x +=
+    (
+        forwardX * moveZ +
+        rightX * moveX
+    ) * playerSpeed;
+
+
+player.position.z +=
+    (
+        forwardZ * moveZ +
+        rightZ * moveX
+    ) * playerSpeed;
+
+
 
     }
 
@@ -1179,48 +1315,154 @@ function startGameScreen() {
 
 function createOffice() {
 
-    // ----------------------------
-    // GOLV
-    // ----------------------------
+    // ========================================
+    // KONTOR - GRUND
+    // ========================================
 
-    const floorGeometry =
-        new THREE.BoxGeometry(
-            40,
-            0.5,
-            30
-        );
+    createOfficeFloor();
+
+createOfficeWalls();
+
+createOfficeWindows();
+
+createOfficeDoor();
+
+createCeiling();
+
+    // ========================================
+    // SKRIVBORD
+    // ========================================
+
+    createDesk(-8, 0, -5);
+    createDesk(0, 0, -5);
+    createDesk(8, 0, -5);
+
+    createDesk(-8, 0, 5);
+    createDesk(0, 0, 5);
+    createDesk(8, 0, 5);
+
+}
+
+// ========================================
+// OFFICE FLOOR
+// ========================================
+
+function createOfficeFloor() {
+
+    // ========================================
+    // GOLV
+    // ========================================
 
     const floorMaterial =
         new THREE.MeshStandardMaterial({
-            color: 0x555555
+            color: 0x4b4b4b,
+            roughness: 0.75,
+            metalness: 0.05
         });
 
-    const officeFloor =
+    const floor =
         new THREE.Mesh(
-            floorGeometry,
+            new THREE.BoxGeometry(
+                40,
+                0.5,
+                30
+            ),
             floorMaterial
         );
 
-    officeFloor.position.set(
+    floor.position.set(
         0,
         -0.25,
         0
     );
 
     scene.add(
-        officeFloor
+        floor
     );
 
 
-    // ----------------------------
-    // VÄGGAR
-    // ----------------------------
+    // ========================================
+    // GOLVPLATTOR
+    // ========================================
+
+    const tileMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x5a5a5a,
+            roughness: 0.85
+        });
+
+    const tileSize = 2;
+
+    for (
+        let x = -19;
+        x < 20;
+        x += tileSize
+    ) {
+
+        for (
+            let z = -14;
+            z < 15;
+            z += tileSize
+        ) {
+
+            const tile =
+                new THREE.Mesh(
+                    new THREE.BoxGeometry(
+                        1.94,
+                        0.04,
+                        1.94
+                    ),
+                    tileMaterial
+                );
+
+            tile.position.set(
+                x,
+                0.02,
+                z
+            );
+
+            scene.add(
+                tile
+            );
+
+        }
+
+    }
+
+}
+
+// ========================================
+// OFFICE WALLS
+// ========================================
+
+function createOfficeWalls() {
+
+    // ========================================
+    // MATERIAL
+    // ========================================
 
     const wallMaterial =
         new THREE.MeshStandardMaterial({
-            color: 0xe0d8c8
+            color: 0xd8d0c0,
+            roughness: 0.9
         });
 
+    const panelMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xc8c0b2,
+            roughness: 1
+        });
+
+    const trimMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x8b8172,
+            roughness: 0.8
+        });
+
+
+    // ========================================
+    // VÄGGAR
+    // ========================================
 
     // Bakvägg
     createWall(
@@ -1233,18 +1475,43 @@ function createOffice() {
         wallMaterial
     );
 
-
     // Framvägg
-    createWall(
-        0,
-        3,
-        15,
-        40,
-        6,
-        0.5,
-        wallMaterial
-    );
+    // ========================================
+// FRAMVÄGG MED DÖRRÖPPNING
+// ========================================
 
+// Vänster del
+createWall(
+    -11.8,
+    3,
+    15,
+    16.4,
+    6,
+    0.5,
+    wallMaterial
+);
+
+// Höger del
+createWall(
+    11.8,
+    3,
+    15,
+    16.4,
+    6,
+    0.5,
+    wallMaterial
+);
+
+// Vägg ovanför dörren
+createWall(
+    0,
+    5.1,
+    15,
+    7.3,
+    1.8,
+    0.5,
+    wallMaterial
+);
 
     // Vänster vägg
     createWall(
@@ -1256,7 +1523,6 @@ function createOffice() {
         30,
         wallMaterial
     );
-
 
     // Höger vägg
     createWall(
@@ -1270,49 +1536,414 @@ function createOffice() {
     );
 
 
+    // ========================================
+    // GOLVLISTER
+    // ========================================
+
+    // Bak
+    createWall(
+        0,
+        0.25,
+        -14.70,
+        39.5,
+        0.35,
+        0.12,
+        trimMaterial
+    );
+
+    // Fram
+    createWall(
+        0,
+        0.25,
+        14.70,
+        39.5,
+        0.35,
+        0.12,
+        trimMaterial
+    );
+
+    // Vänster
+    createWall(
+        -19.70,
+        0.25,
+        0,
+        0.12,
+        0.35,
+        29.5,
+        trimMaterial
+    );
+
+    // Höger
+    createWall(
+        19.70,
+        0.25,
+        0,
+        0.12,
+        0.35,
+        29.5,
+        trimMaterial
+    );
+
+
+    // ========================================
+    // VÄGGPANELER
+    // ========================================
+
     // ----------------------------
-    // SKRIVBORD
+    // BAKVÄGG
     // ----------------------------
 
-    createDesk(
-        -8,
+    for (
+        let x = -18;
+        x <= 18;
+        x += 4
+    ) {
+
+        createWall(
+            x,
+            2.6,
+            -14.70,
+            3.7,
+            4.6,
+            0.06,
+            panelMaterial
+        );
+
+    }
+
+
+    // ----------------------------
+    // FRAMVÄGG
+    // ----------------------------
+
+    for (
+        let x = -18;
+        x <= 18;
+        x += 4
+    ) {
+
+        createWall(
+            x,
+            2.6,
+            14.70,
+            3.7,
+            4.6,
+            0.06,
+            panelMaterial
+        );
+
+    }
+
+
+    // ----------------------------
+    // VÄNSTER VÄGG
+    // ----------------------------
+
+    for (
+        let z = -13;
+        z <= 13;
+        z += 4
+    ) {
+
+        createWall(
+            -19.70,
+            2.6,
+            z,
+            0.06,
+            4.6,
+            3.7,
+            panelMaterial
+        );
+
+    }
+
+
+    // ----------------------------
+    // HÖGER VÄGG
+    // ----------------------------
+
+    for (
+        let z = -13;
+        z <= 13;
+        z += 4
+    ) {
+
+        createWall(
+            19.70,
+            2.6,
+            z,
+            0.06,
+            4.6,
+            3.7,
+            panelMaterial
+        );
+
+    }
+
+
+    // ========================================
+    // ÖVRE VÄGGLISTER
+    // ========================================
+
+    // Bakvägg
+    createWall(
         0,
-        -5
+        5.25,
+        -14.68,
+        39.5,
+        0.18,
+        0.10,
+        trimMaterial
     );
 
-    createDesk(
+    // Framvägg
+    createWall(
         0,
-        0,
-        -5
+        5.25,
+        14.68,
+        39.5,
+        0.18,
+        0.10,
+        trimMaterial
     );
 
-    createDesk(
-        8,
+    // Vänster vägg
+    createWall(
+        -19.68,
+        5.25,
         0,
-        -5
+        0.10,
+        0.18,
+        29.5,
+        trimMaterial
     );
 
-
-    createDesk(
-        -8,
+    // Höger vägg
+    createWall(
+        19.68,
+        5.25,
         0,
-        5
-    );
-
-    createDesk(
-        0,
-        0,
-        5
-    );
-
-    createDesk(
-        8,
-        0,
-        5
+        0.10,
+        0.18,
+        29.5,
+        trimMaterial
     );
 
 }
 
+// ========================================
+// OFFICE DOOR
+// ========================================
+
+let officeDoor = null;
+
+let officeDoorOpen = false;
+
+let officeDoorAnimating = false;
+
+function createOfficeDoor() {
+
+    const doorMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x5a3824,
+            roughness: 0.8
+        });
+
+    const frameMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x8b8172,
+            roughness: 0.8
+        });
+
+
+    // ========================================
+    // DÖRR
+    // ========================================
+
+    officeDoor =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                2.4,
+                4.2,
+                0.18
+            ),
+            doorMaterial
+        );
+
+
+    // Dörrens gångjärn sitter på vänster sida
+    officeDoor.geometry.translate(
+        1.2,
+        0,
+        0
+    );
+
+
+    officeDoor.position.set(
+        -1.2,
+        2.1,
+        14.65
+    );
+
+
+    scene.add(
+        officeDoor
+    );
+
+
+    // ========================================
+    // DÖRRKARM
+    // ========================================
+
+    // Vänster karm
+    createWall(
+        -1.35,
+        2.1,
+        14.5,
+        0.25,
+        4.5,
+        0.35,
+        frameMaterial
+    );
+
+
+    // Höger karm
+    createWall(
+        1.35,
+        2.1,
+        14.5,
+        0.25,
+        4.5,
+        0.35,
+        frameMaterial
+    );
+
+
+    // Övre karm
+    createWall(
+        0,
+        4.35,
+        14.5,
+        2.95,
+        0.25,
+        0.35,
+        frameMaterial
+    );
+
+
+    // ========================================
+    // HANDTAG
+    // ========================================
+
+    const handle =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                0.1,
+                12,
+                12
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0xd4af37,
+                metalness: 0.8,
+                roughness: 0.25
+            })
+        );
+
+
+    handle.position.set(
+        0.75,
+        2.1,
+        14.48
+    );
+
+
+    officeDoor.add(
+        handle
+    );
+
+}
+
+// ========================================
+// DOOR INTERACTION
+// ========================================
+
+window.addEventListener(
+    "keydown",
+    (event) => {
+
+        if (
+            event.key.toLowerCase() !== "e"
+        ) {
+            return;
+        }
+
+
+        if (
+            !officeDoor ||
+            officeDoorAnimating
+        ) {
+            return;
+        }
+
+
+        const distance =
+            player.position.distanceTo(
+                officeDoor.position
+            );
+
+
+        if (distance > 4) {
+            return;
+        }
+
+
+        officeDoorAnimating = true;
+
+        officeDoorOpen =
+            !officeDoorOpen;
+
+    }
+);
+
+// ========================================
+// OFFICE WINDOWS
+// ========================================
+
+function createOfficeWindows() {
+
+    createWindow(
+        -12,
+        3.5,
+        -14.7,
+        5,
+        3
+    );
+
+    createWindow(
+        -5,
+        3.5,
+        -14.7,
+        5,
+        3
+    );
+
+    createWindow(
+        2,
+        3.5,
+        -14.7,
+        5,
+        3
+    );
+
+    createWindow(
+        9,
+        3.5,
+        -14.7,
+        5,
+        3
+    );
+
+}
 
 // ========================================
 // WALL
@@ -1353,6 +1984,366 @@ function createWall(
 
 }
 
+// ========================================
+// WINDOW
+// ========================================
+
+function createWindow(
+    x,
+    y,
+    z,
+    width,
+    height
+) {
+
+    // ----------------------------
+    // FÖNSTERGLAS
+    // ----------------------------
+
+    const glass =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                width,
+                height,
+                0.12
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x6fb7d8,
+                roughness: 0.2,
+                metalness: 0.1
+            })
+        );
+
+    glass.position.set(
+        x,
+        y,
+        z
+    );
+
+    scene.add(
+        glass
+    );
+
+
+    // ----------------------------
+    // FÖNSTERKARM
+    // ----------------------------
+
+    const frameMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xf0f0f0
+        });
+
+
+    // Övre karm
+    createWindowFrame(
+        x,
+        y + height / 2,
+        z,
+        width,
+        0.15,
+        0.2,
+        frameMaterial
+    );
+
+
+    // Nedre karm
+    createWindowFrame(
+        x,
+        y - height / 2,
+        z,
+        width,
+        0.15,
+        0.2,
+        frameMaterial
+    );
+
+
+    // Vänster karm
+    createWindowFrame(
+        x - width / 2,
+        y,
+        z,
+        0.15,
+        height,
+        0.2,
+        frameMaterial
+    );
+
+
+    // Höger karm
+    createWindowFrame(
+        x + width / 2,
+        y,
+        z,
+        0.15,
+        height,
+        0.2,
+        frameMaterial
+    );
+
+
+    // ----------------------------
+    // MITTSTOLPE
+    // ----------------------------
+
+    createWindowFrame(
+        x,
+        y,
+        z - 0.02,
+        0.12,
+        height,
+        0.22,
+        frameMaterial
+    );
+
+}
+
+
+// ========================================
+// WINDOW FRAME
+// ========================================
+
+function createWindowFrame(
+    x,
+    y,
+    z,
+    width,
+    height,
+    depth,
+    material
+) {
+
+    const frame =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                width,
+                height,
+                depth
+            ),
+            material
+        );
+
+    frame.position.set(
+        x,
+        y,
+        z
+    );
+
+    scene.add(
+        frame
+    );
+
+
+
+}
+
+// ========================================
+// CEILING
+// ========================================
+
+// ========================================
+// CEILING
+// ========================================
+
+function createCeiling() {
+
+    // ----------------------------
+    // TAK OVANFÖR UNDERTAKET
+    // ----------------------------
+
+    const roof =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                40,
+                0.3,
+                30
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0xcfcfcf,
+                roughness: 1
+            })
+        );
+
+    roof.position.set(
+        0,
+        6.25,
+        0
+    );
+
+    scene.add(
+        roof
+    );
+
+
+    // ----------------------------
+    // TAKPLATTOR
+    // ----------------------------
+
+    const ceilingMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xd8d8d8,
+            roughness: 0.9
+        });
+
+
+    const tileSize = 2;
+
+    const tilesX = 20;
+    const tilesZ = 15;
+
+
+    for (
+        let x = 0;
+        x < tilesX;
+        x++
+    ) {
+
+        for (
+            let z = 0;
+            z < tilesZ;
+            z++
+        ) {
+
+            const tile =
+                new THREE.Mesh(
+                    new THREE.BoxGeometry(
+                        tileSize - 0.04,
+                        0.12,
+                        tileSize - 0.04
+                    ),
+                    ceilingMaterial
+                );
+
+
+            tile.position.set(
+                -19 +
+                x * tileSize,
+
+                6,
+
+                -14 +
+                z * tileSize
+            );
+
+
+            scene.add(
+                tile
+            );
+
+        }
+
+    }
+
+
+    // ----------------------------
+    // LYSRÖR
+    // ----------------------------
+
+    createCeilingLight(
+        -10,
+        6.08,
+        -10
+    );
+
+    createCeilingLight(
+        0,
+        6.08,
+        -10
+    );
+
+    createCeilingLight(
+        10,
+        6.08,
+        -10
+    );
+
+
+    createCeilingLight(
+        -10,
+        6.08,
+        0
+    );
+
+    createCeilingLight(
+        0,
+        6.08,
+        0
+    );
+
+    createCeilingLight(
+        10,
+        6.08,
+        0
+    );
+
+
+    createCeilingLight(
+        -10,
+        6.08,
+        10
+    );
+
+    createCeilingLight(
+        0,
+        6.08,
+        10
+    );
+
+    createCeilingLight(
+        10,
+        6.08,
+        10
+    );
+
+}
+
+
+// ========================================
+// CEILING LIGHT
+// ========================================
+
+function createCeilingLight(
+    x,
+    y,
+    z
+) {
+
+    // ----------------------------
+    // SJÄLVA LYSRÖRET
+    // ----------------------------
+
+    const lightMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            emissive: 0xffffff,
+            emissiveIntensity: 2
+        });
+
+
+    const tube =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.5,
+                0.08,
+                0.5
+            ),
+            lightMaterial
+        );
+
+
+    tube.position.set(
+        x,
+        y,
+        z
+    );
+
+
+    scene.add(
+        tube
+    );
+
+}
 
 // ========================================
 // DESK
@@ -1565,54 +2556,86 @@ function animate() {
 
     // Uppdatera spelaren
     updatePlayer();
+    
+    updateOfficeDoor();
 
 
-    // ====================================
-    // CAMERA FOLLOW
-    // ====================================
 
-    const cameraTargetX =
-        player.position.x;
+// ====================================
+// FIRST PERSON CAMERA
+// ====================================
 
-    const cameraTargetY =
-        player.position.y + 8;
+camera.position.x =
+    player.position.x;
 
-    const cameraTargetZ =
-        player.position.z + 10;
+camera.position.y =
+    player.position.y + 0.6;
+
+camera.position.z =
+    player.position.z;
+
+camera.rotation.order =
+    "YXZ";
+
+camera.rotation.y =
+    cameraYaw;
+
+camera.rotation.x =
+    cameraPitch;
+
+// ====================================
+// RENDERA SPELET
+// ====================================
+
+renderer.render(
+    scene,
+    camera
+);
+
+}
+
+// ========================================
+// UPDATE DOOR
+// ========================================
+
+function updateOfficeDoor() {
+
+    if (
+        !officeDoor ||
+        !officeDoorAnimating
+    ) {
+        return;
+    }
 
 
-    camera.position.x +=
-        (
-            cameraTargetX -
-            camera.position.x
-        ) * 0.08;
+    const targetRotation =
+        officeDoorOpen
+            ? -Math.PI / 2
+            : 0;
 
 
-    camera.position.y +=
-        (
-            cameraTargetY -
-            camera.position.y
-        ) * 0.08;
+    officeDoor.rotation.y =
+        THREE.MathUtils.lerp(
+            officeDoor.rotation.y,
+            targetRotation,
+            0.15
+        );
 
 
-    camera.position.z +=
-        (
-            cameraTargetZ -
-            camera.position.z
-        ) * 0.08;
+    if (
+        Math.abs(
+            officeDoor.rotation.y -
+            targetRotation
+        ) < 0.01
+    ) {
 
+        officeDoor.rotation.y =
+            targetRotation;
 
-    camera.lookAt(
-        player.position.x,
-        player.position.y,
-        player.position.z
-    );
+        officeDoorAnimating =
+            false;
 
-
-    renderer.render(
-        scene,
-        camera
-    );
+    }
 
 }
 
