@@ -1554,7 +1554,7 @@ createWall(
     -11.8,
     3,
     15,
-    16.4,
+    20.9,
     6,
     0.5,
     wallMaterial
@@ -1565,7 +1565,7 @@ createWall(
     11.8,
     3,
     15,
-    16.4,
+    20.9,
     6,
     0.5,
     wallMaterial
