@@ -1,5 +1,157 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
+import { OBJLoader } from
+    "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/OBJLoader.js";
+
+// ========================================
+// STOL OBJ
+// ========================================
+
+const objLoader =
+    new OBJLoader();
+
+let chairModel = null;
+
+let officeChairs = [];
+
+let sittingOnChair = null;
+let isSitting = false;
+
+const pendingChairs = [];
+
+objLoader.load(
+    "./assets/stol.obj",
+
+    (object) => {
+
+        chairModel = object;
+
+chairModel.scale.set(
+    1,
+    1,
+    1
+);
+
+chairModel.traverse(
+    (child) => {
+
+        if (!child.isMesh) {
+            return;
+        }
+
+        // Hämta namnet från både
+        // mesh och material
+        const meshName =
+            (
+                child.name || ""
+            ).toLowerCase();
+
+        const materialName =
+            (
+                child.material?.name || ""
+            ).toLowerCase();
+
+        const name =
+            meshName + " " + materialName;
+
+
+        // ====================================
+        // BLÅ DEL
+        // ====================================
+
+        if (
+            name.includes("blå") ||
+            name.includes("bla")
+        ) {
+
+            child.material =
+                new THREE.MeshStandardMaterial({
+                    color: 0x838383,
+                    roughness: 0.7,
+                    metalness: 0.05
+                });
+
+            console.log(
+                "BLÅ DEL:",
+                child.name,
+                child.material.name
+            );
+
+            return;
+        }
+
+
+        // ====================================
+        // SVART DEL
+        // ====================================
+
+        if (
+            name.includes("svart")
+        ) {
+
+            child.material =
+                new THREE.MeshStandardMaterial({
+                    color: 0x494444,
+                    roughness: 0.65,
+                    metalness: 0.15
+                });
+
+            console.log(
+                "SVART DEL:",
+                child.name
+            );
+
+            return;
+        }
+
+
+// ====================================
+// OKÄND DEL
+// ====================================
+// Alla delar som inte är blå
+// blir svarta istället för vita.
+
+child.material =
+    new THREE.MeshStandardMaterial({
+        color: 0x494444,
+        roughness: 0.65,
+        metalness: 0.15
+    });
+
+    }
+);
+
+console.log(
+    "stol.obj laddad!"
+);
+
+// Skapa alla stolar som väntade på modellen
+for (const chair of pendingChairs) {
+
+    addOBJChair(
+        chair.x,
+        chair.y,
+        chair.z
+    );
+
+}
+
+pendingChairs.length = 0;
+
+    },
+
+    undefined,
+
+    (error) => {
+
+        console.error(
+            "Kunde inte ladda stol.obj:",
+            error
+        );
+
+    }
+);
+
 
 // ========================================
 // SERVER
@@ -87,7 +239,8 @@ document
     .appendChild(
         renderer.domElement
     );
-
+renderer.domElement.style.touchAction =
+    "none";
 
 // ========================================
 // LIGHT
@@ -248,6 +401,7 @@ window.addEventListener(
 
 // Spelarens hastighet
 const playerSpeed = 0.08;
+
 
 // ========================================
 // MOBILE JOYSTICK
@@ -507,18 +661,24 @@ joystickCanvas.addEventListener(
 // MOBILE TOUCH CAMERA
 // ========================================
 
-let lookActive = false;
-let lookPointerId = null;
+let cameraTouchId = null;
 
 let lastLookX = 0;
 let lastLookY = 0;
-
 
 window.addEventListener(
     "pointerdown",
     (event) => {
 
-        // Vänstra sidan är joystick
+        // Vi bryr oss bara om fingrar
+        if (
+            event.pointerType !== "touch"
+        ) {
+            return;
+        }
+
+        // Vänster sida är reserverad
+        // för joysticken
         if (
             event.clientX <
             window.innerWidth / 2
@@ -526,9 +686,8 @@ window.addEventListener(
             return;
         }
 
-        lookActive = true;
-
-        lookPointerId =
+        // Höger sida startar kameran
+        cameraTouchId =
             event.pointerId;
 
         lastLookX =
@@ -537,6 +696,12 @@ window.addEventListener(
         lastLookY =
             event.clientY;
 
+        // Viktigt på mobilen
+        event.preventDefault();
+
+    },
+    {
+        passive: false
     }
 );
 
@@ -545,10 +710,10 @@ window.addEventListener(
     "pointermove",
     (event) => {
 
+        // Detta finger styr inte kameran
         if (
-            !lookActive ||
             event.pointerId !==
-            lookPointerId
+            cameraTouchId
         ) {
             return;
         }
@@ -561,7 +726,6 @@ window.addEventListener(
             event.clientY -
             lastLookY;
 
-
         lastLookX =
             event.clientX;
 
@@ -569,18 +733,25 @@ window.addEventListener(
             event.clientY;
 
 
+        // ----------------------------
+        // KAMERA VÄNSTER / HÖGER
+        // ----------------------------
+
         cameraYaw -=
             deltaX *
             lookSensitivity;
+
+
+        // ----------------------------
+        // KAMERA UPP / NER
+        // ----------------------------
 
         cameraPitch -=
             deltaY *
             lookSensitivity;
 
 
-        // Begränsa hur långt upp/ned
-        // man kan titta
-
+        // Begränsa upp/ned
         cameraPitch =
             Math.max(
                 -Math.PI / 2,
@@ -590,6 +761,11 @@ window.addEventListener(
                 )
             );
 
+        event.preventDefault();
+
+    },
+    {
+        passive: false
     }
 );
 
@@ -600,11 +776,11 @@ window.addEventListener(
 
         if (
             event.pointerId ===
-            lookPointerId
+            cameraTouchId
         ) {
 
-            lookActive = false;
-            lookPointerId = null;
+            cameraTouchId =
+                null;
 
         }
 
@@ -618,11 +794,11 @@ window.addEventListener(
 
         if (
             event.pointerId ===
-            lookPointerId
+            cameraTouchId
         ) {
 
-            lookActive = false;
-            lookPointerId = null;
+            cameraTouchId =
+                null;
 
         }
 
@@ -772,10 +948,43 @@ function getGamepadLook() {
 }
 
 // ========================================
+// XBOX INTERACT
+// ========================================
+
+let interactPressed = false;
+
+function checkGamepadInteract() {
+
+    if (gamepadIndex === null) {
+        return false;
+    }
+
+    const pads =
+        navigator.getGamepads();
+
+    const pad =
+        pads[gamepadIndex];
+
+    if (!pad) {
+        return false;
+    }
+
+    // Xbox X = knapp 2
+    return pad.buttons[2]?.pressed || false;
+}
+
+// ========================================
 // UPDATE PLAYER
 // ========================================
 
 function updatePlayer() {
+
+    // Sittande spelare kan inte gå
+    if (isSitting) {
+
+        return;
+
+    }
 
     let moveX = 0;
     let moveZ = 0;
@@ -839,6 +1048,27 @@ moveZ +=
 
 const gamepad =
     getGamepadInput();
+
+// ====================================
+// XBOX INTERACT
+// ====================================
+
+const currentInteract =
+    checkGamepadInteract();
+
+if (
+    currentInteract &&
+    !interactPressed
+) {
+
+    tryOpenOfficeDoor();
+
+    trySitOnChair();
+
+}
+
+interactPressed =
+    currentInteract;
 
 moveX +=
     gamepad.x;
@@ -1410,7 +1640,52 @@ createCeiling();
     createDesk(0, 0, 5);
     createDesk(8, 0, 5);
 
+// ========================================
+// DESK BARRIERS
+// ========================================
+
+// Rad 1
+createDeskBarrier(
+    -8,
+    0,
+    -6.3
+);
+
+createDeskBarrier(
+    0,
+    0,
+    -6.3
+);
+
+createDeskBarrier(
+    8,
+    0,
+    -6.3
+);
+
+
+// Rad 2
+createDeskBarrier(
+    -8,
+    0,
+    3.7
+);
+
+createDeskBarrier(
+    0,
+    0,
+    3.7
+);
+
+createDeskBarrier(
+    8,
+    0,
+    3.7
+);
+
 }
+
+
 
 // ========================================
 // OFFICE FLOOR
@@ -1943,6 +2218,137 @@ function createOfficeDoor() {
 }
 
 // ========================================
+// DOOR INTERACTION FUNCTION
+// ========================================
+
+function tryOpenOfficeDoor() {
+
+    if (
+        !officeDoor ||
+        officeDoorAnimating
+    ) {
+        return;
+    }
+
+    const distance =
+        player.position.distanceTo(
+            officeDoor.position
+        );
+
+    if (distance > 4) {
+        return;
+    }
+
+    officeDoorAnimating = true;
+
+    officeDoorOpen =
+        !officeDoorOpen;
+}
+
+
+// ========================================
+// MOBILE DOOR TOUCH
+// ========================================
+
+const touchRaycaster =
+    new THREE.Raycaster();
+
+const touchMouse =
+    new THREE.Vector2();
+
+window.addEventListener(
+    "pointerdown",
+    (event) => {
+
+        if (
+            event.pointerType !== "touch"
+        ) {
+            return;
+        }
+
+        if (
+            event.clientX <
+            window.innerWidth / 2
+        ) {
+            return;
+        }
+
+        touchMouse.x =
+            (event.clientX /
+                window.innerWidth) *
+                2 - 1;
+
+        touchMouse.y =
+            -(event.clientY /
+                window.innerHeight) *
+                2 + 1;
+
+        touchRaycaster.setFromCamera(
+    touchMouse,
+    camera
+);
+
+// Dörren finns inte innan kontoret har skapats
+if (!officeDoor) {
+    return;
+}
+
+// ========================================
+// TOUCH - DÖRR OCH STOLAR
+// ========================================
+
+if (officeDoor) {
+
+    const doorHits =
+        touchRaycaster.intersectObject(
+            officeDoor,
+            true
+        );
+
+    if (
+        doorHits.length > 0
+    ) {
+
+        tryOpenOfficeDoor();
+
+        return;
+
+    }
+
+}
+
+
+// ========================================
+// TRYCK PÅ STOL
+// ========================================
+
+for (
+    const chair of officeChairs
+) {
+
+    const chairHits =
+        touchRaycaster.intersectObject(
+            chair.object,
+            true
+        );
+
+    if (
+        chairHits.length > 0
+    ) {
+
+        trySitOnChair();
+
+        return;
+
+    }
+
+}
+
+    }
+);
+
+
+// ========================================
 // DOOR INTERACTION
 // ========================================
 
@@ -1956,30 +2362,26 @@ window.addEventListener(
             return;
         }
 
+        tryOpenOfficeDoor();
+
+    }
+);
+
+// ========================================
+// CHAIR E INTERACTION
+// ========================================
+
+window.addEventListener(
+    "keydown",
+    (event) => {
 
         if (
-            !officeDoor ||
-            officeDoorAnimating
+            event.key.toLowerCase() !== "e"
         ) {
             return;
         }
 
-
-        const distance =
-            player.position.distanceTo(
-                officeDoor.position
-            );
-
-
-        if (distance > 4) {
-            return;
-        }
-
-
-        officeDoorAnimating = true;
-
-        officeDoorOpen =
-            !officeDoorOpen;
+        trySitOnChair();
 
     }
 );
@@ -2239,7 +2641,7 @@ function createCeiling() {
                 30
             ),
             new THREE.MeshStandardMaterial({
-                color: 0xcfcfcf,
+                color: 0xE9EED4,
                 roughness: 1
             })
         );
@@ -2261,7 +2663,7 @@ function createCeiling() {
 
     const ceilingMaterial =
         new THREE.MeshStandardMaterial({
-            color: 0xd8d8d8,
+            color: 0xE9EED4,
             roughness: 0.9
         });
 
@@ -2499,6 +2901,8 @@ function createDesk(
         );
 
     }
+    
+    
 
 
     // ----------------------------
@@ -2510,6 +2914,579 @@ function createDesk(
         2.3,
         z
     );
+
+    // ========================================
+    // KONTORSSTOL
+    // ========================================
+
+    createOfficeChair(
+        x,
+        0,
+        z + 2.2
+    );
+
+}
+
+// ========================================
+// HYG-INSPIRED OFFICE CHAIR
+// ========================================
+
+function createOfficeChair(
+    x,
+    y,
+    z
+) {
+
+    // Om stol.obj inte är färdigladdad ännu
+    // väntar vi tills modellen är klar.
+
+    if (!chairModel) {
+
+        pendingChairs.push({
+            x: x,
+            y: y,
+            z: z
+        });
+
+        return;
+    }
+
+    addOBJChair(
+        x,
+        y,
+        z
+    );
+
+}
+
+function addOBJChair(
+    x,
+    y,
+    z
+) {
+
+    const chair =
+        chairModel.clone(true);
+
+    chair.position.set(
+        x,
+        y,
+        z
+    );
+
+    chair.scale.set(
+        1,
+        1,
+        1
+    );
+
+    chair.rotation.y =
+        Math.PI;
+
+    scene.add(
+        chair
+    );
+
+
+    // ====================================
+    // SPARA STOLEN
+    // ====================================
+
+    officeChairs.push({
+        object: chair,
+        x: x,
+        y: y,
+        z: z,
+        radius: 1.0,
+        seatHeight: 1.0
+    });
+
+}
+
+// ========================================
+// CHAIR COLLISION
+// ========================================
+
+function updateChairCollision() {
+
+    if (isSitting) {
+        return;
+    }
+
+    for (const chair of officeChairs) {
+
+        const dx =
+            player.position.x -
+            chair.x;
+
+        const dz =
+            player.position.z -
+            chair.z;
+
+        const distance =
+            Math.sqrt(
+                dx * dx +
+                dz * dz
+            );
+
+        const minDistance =
+            chair.radius + 0.45;
+
+        if (
+            distance < minDistance &&
+            distance > 0.001
+        ) {
+
+            const pushX =
+                dx / distance;
+
+            const pushZ =
+                dz / distance;
+
+            player.position.x =
+                chair.x +
+                pushX *
+                minDistance;
+
+            player.position.z =
+                chair.z +
+                pushZ *
+                minDistance;
+
+        }
+
+    }
+
+}
+
+// ========================================
+// SIT ON CHAIR
+// ========================================
+
+function trySitOnChair() {
+
+    // Om vi redan sitter
+    // lämnar vi stolen
+    if (isSitting) {
+
+        standUpFromChair();
+
+        return;
+    }
+
+
+    let closestChair = null;
+
+    let closestDistance =
+        Infinity;
+
+
+    for (const chair of officeChairs) {
+
+        const dx =
+            player.position.x -
+            chair.x;
+
+        const dz =
+            player.position.z -
+            chair.z;
+
+        const distance =
+            Math.sqrt(
+                dx * dx +
+                dz * dz
+            );
+
+
+        if (
+            distance < 2.2 &&
+            distance < closestDistance
+        ) {
+
+            closestChair =
+                chair;
+
+            closestDistance =
+                distance;
+
+        }
+
+    }
+
+
+    if (!closestChair) {
+        return;
+    }
+
+
+    sittingOnChair =
+        closestChair;
+
+    isSitting =
+        true;
+
+
+    // Placera spelaren mitt framför stolen
+    player.position.x =
+        closestChair.x;
+
+    player.position.z =
+        closestChair.z;
+
+
+    // Sitt ner
+    player.position.y =
+        closestChair.y +
+        0.35;
+
+}
+
+// ========================================
+// STAND UP
+// ========================================
+
+function standUpFromChair() {
+
+    if (!sittingOnChair) {
+        return;
+    }
+
+
+    const chair =
+        sittingOnChair;
+
+
+    // Flytta spelaren lite framför stolen
+    const forwardX =
+        Math.sin(
+            chair.object.rotation.y
+        );
+
+    const forwardZ =
+        Math.cos(
+            chair.object.rotation.y
+        );
+
+
+    player.position.x =
+        chair.x +
+        forwardX *
+        1.2;
+
+    player.position.z =
+        chair.z +
+        forwardZ *
+        1.2;
+
+
+    player.position.y =
+        1;
+
+
+    sittingOnChair =
+        null;
+
+    isSitting =
+        false;
+
+}
+
+
+// ========================================
+// DETAILED OFFICE DESK BARRIERS
+// ========================================
+
+function createDeskBarrier(
+    x,
+    y,
+    z,
+    rotation = 0
+) {
+
+    // ====================================
+    // MATERIAL
+    // ====================================
+
+    const fabricMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xc8b89a,
+            roughness: 1
+        });
+
+    const frameMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x756b5d,
+            roughness: 0.8,
+            metalness: 0.25
+        });
+
+    const footMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x555555,
+            roughness: 0.6,
+            metalness: 0.5
+        });
+
+
+    // ====================================
+    // HELPER
+    // ====================================
+
+// ====================================
+// JÄRNBENS HÖJD
+// ====================================
+
+const legHeight = 0.75;
+
+    function createPanel(
+    px,
+    pz,
+    width,
+    depth,
+    height = 3.5
+) {
+
+        // ----------------------------
+        // BEIGE PANEL
+        // ----------------------------
+
+        const panel =
+            new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    width,
+                    height,
+                    depth
+                ),
+                fabricMaterial
+            );
+
+        panel.position.set(
+    px,
+    y + legHeight + height / 2,
+    pz
+);
+
+        panel.rotation.y =
+            rotation;
+
+        scene.add(
+            panel
+        );
+
+
+        // ----------------------------
+        // TOP EDGE
+        // ----------------------------
+
+        const top =
+            new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    width + 0.12,
+                    0.10,
+                    depth + 0.08
+                ),
+                frameMaterial
+            );
+
+        top.position.set(
+    px,
+    y + legHeight + height + 0.05,
+    pz
+);
+
+        top.rotation.y =
+            rotation;
+
+        scene.add(
+            top
+        );
+
+
+        // ----------------------------
+        // BOTTOM EDGE
+        // ----------------------------
+
+        const bottom =
+            new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    width + 0.08,
+                    0.08,
+                    depth + 0.06
+                ),
+                frameMaterial
+            );
+
+        bottom.position.set(
+    px,
+    y + legHeight + 0.04,
+    pz
+);
+
+        bottom.rotation.y =
+            rotation;
+
+        scene.add(
+            bottom
+        );
+
+    }
+
+
+    // ====================================
+    // BARRIÄRERNAS POSITIONER
+    // ====================================
+
+    // Vi bygger ett U runt bordet.
+    //
+    // Framsidan lämnas öppen
+    // eftersom stolen ska stå där.
+
+
+    // ------------------------------------
+    // VÄNSTER SIDA
+    // ------------------------------------
+
+    createPanel(
+    x - 2.52,
+    z,
+    0.18,
+    2.9
+);
+
+
+    // ------------------------------------
+    // HÖGER SIDA
+    // ------------------------------------
+
+    createPanel(
+    x + 2.52,
+    z,
+    0.18,
+    2.9
+);
+
+
+    // ------------------------------------
+    // BAKSIDA
+    // ------------------------------------
+
+    createPanel(
+    x,
+    z - 1.30,
+    4.8,
+    0.18
+);
+
+
+    // ====================================
+// JÄRNBEN
+// ====================================
+
+const legMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0x4a4a4a,
+        roughness: 0.55,
+        metalness: 0.7
+    });
+
+
+// Järnbenen går från golvet
+// upp till barriären
+
+
+const legGeometry =
+    new THREE.BoxGeometry(
+        0.16,
+        legHeight,
+        0.16
+    );
+
+const legPositions = [
+
+    [-2.35, -1.30],
+    [-2.35,  1.30],
+
+    [ 2.35, -1.30],
+    [ 2.35,  1.30],
+
+    [0, -1.30]
+
+];
+
+
+for (
+    const pos of legPositions
+) {
+
+    const leg =
+        new THREE.Mesh(
+            legGeometry,
+            legMaterial
+        );
+
+    leg.position.set(
+        x + pos[0],
+        y + legHeight / 2,
+        z + pos[1]
+    );
+
+    leg.rotation.y =
+        rotation;
+
+    scene.add(
+        leg
+    );
+
+}
+
+
+    // ====================================
+    // SMÅ FÄSTEN
+    // ====================================
+
+    const mountGeometry =
+        new THREE.BoxGeometry(
+            0.28,
+            0.18,
+            0.28
+        );
+
+
+    const mountPositions = [
+
+    [-2.35, -1.30],
+    [-2.35,  1.30],
+
+    [ 2.35, -1.30],
+    [ 2.35,  1.30]
+
+];
+
+
+    for (
+        const pos of mountPositions
+    ) {
+
+        const mount =
+            new THREE.Mesh(
+                mountGeometry,
+                frameMaterial
+            );
+
+        mount.position.set(
+            x + pos[0],
+            y + 0.20,
+            z + pos[1]
+        );
+
+        mount.rotation.y =
+            rotation;
+
+        scene.add(
+            mount
+        );
+
+    }
 
 }
 
@@ -2526,7 +3503,7 @@ function createComputer(
 
     const computerMaterial =
         new THREE.MeshStandardMaterial({
-            color: 0x777777
+            color: 0xE9EED4
         });
 
 
@@ -2589,7 +3566,7 @@ function createComputer(
 
     keyboard.position.set(
         x,
-        2.15,
+        3.2,
         z + 1
     );
 
@@ -2635,8 +3612,10 @@ function animate() {
 
     // Uppdatera spelaren
     updatePlayer();
-    
-    updateOfficeDoor();
+
+updateChairCollision();
+
+updateOfficeDoor();
 
 
 
@@ -2647,8 +3626,17 @@ function animate() {
 camera.position.x =
     player.position.x;
 
-camera.position.y =
-    player.position.y + 0.6;
+if (sittingOnChair) {
+
+    camera.position.y =
+        player.position.y + 2.35;
+
+} else {
+
+    camera.position.y =
+        player.position.y + 2.0;
+
+}
 
 camera.position.z =
     player.position.z;
