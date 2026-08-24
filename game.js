@@ -144,12 +144,17 @@ pendingChairs.length = 0;
 
     (error) => {
 
-        console.error(
-            "Kunde inte ladda stol.obj:",
-            error
-        );
+    console.error(
+        "❌ KUNDE INTE LADDA STOL.OBJ"
+    );
 
-    }
+    console.error(error);
+
+    alert(
+        "Kunde inte ladda stol.obj. Kolla konsolen."
+    );
+
+}
 );
 
 
