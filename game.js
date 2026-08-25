@@ -2841,13 +2841,40 @@ function createDesk(
     z
 ) {
 
+    // ========================================
+    // MATERIAL
+    // ========================================
+
     const woodMaterial =
         new THREE.MeshStandardMaterial({
-            color: 0x70452a
+            color: 0x70452a,
+            roughness: 0.8
+        });
+
+    const woodDarkMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x4a2b1a,
+            roughness: 0.9
+        });
+
+    const metalMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x555555,
+            roughness: 0.45,
+            metalness: 0.7
+        });
+
+    const blackMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x222222,
+            roughness: 0.7
         });
 
 
-    // Bordsskiva
+    // ========================================
+    // BORDSSKIVA
+    // ========================================
+
     const top =
         new THREE.Mesh(
             new THREE.BoxGeometry(
@@ -2869,7 +2896,60 @@ function createDesk(
     );
 
 
-    // Ben
+    // ========================================
+    // FRÄMRE BORDSKANT
+    // ========================================
+
+    const frontEdge =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                5.1,
+                0.18,
+                0.12
+            ),
+            woodDarkMaterial
+        );
+
+    frontEdge.position.set(
+        x,
+        1.82,
+        z + 1.2
+    );
+
+    scene.add(
+        frontEdge
+    );
+
+
+    // ========================================
+    // BAKRE BORDSKANT
+    // ========================================
+
+    const backEdge =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                5.1,
+                0.18,
+                0.12
+            ),
+            woodDarkMaterial
+        );
+
+    backEdge.position.set(
+        x,
+        1.82,
+        z - 1.2
+    );
+
+    scene.add(
+        backEdge
+    );
+
+
+    // ========================================
+    // METALLBEN
+    // ========================================
+
     const legGeometry =
         new THREE.BoxGeometry(
             0.3,
@@ -2879,9 +2959,9 @@ function createDesk(
 
     const legPositions = [
         [-2, 1, -0.9],
-        [2, 1, -0.9],
-        [-2, 1, 0.9],
-        [2, 1, 0.9]
+        [ 2, 1, -0.9],
+        [-2, 1,  0.9],
+        [ 2, 1,  0.9]
     ];
 
 
@@ -2892,7 +2972,7 @@ function createDesk(
         const leg =
             new THREE.Mesh(
                 legGeometry,
-                woodMaterial
+                metalMaterial
             );
 
         leg.position.set(
@@ -2906,19 +2986,128 @@ function createDesk(
         );
 
     }
-    
-    
 
 
-    // ----------------------------
+    // ========================================
+// LÅDA UNDER BORDET
+// ========================================
+
+const drawer =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            1.5,
+            0.55,
+            1.0
+        ),
+        woodDarkMaterial
+    );
+
+drawer.position.set(
+    x - 1.2,
+    1.48,
+    z + 0.25
+);
+
+scene.add(
+    drawer
+);
+
+
+// ========================================
+// LÅDFRONT
+// ========================================
+
+const drawerFront =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            1.55,
+            0.58,
+            0.12
+        ),
+        woodMaterial
+    );
+
+drawerFront.position.set(
+    x - 1.2,
+    1.48,
+    z + 0.78
+);
+
+scene.add(
+    drawerFront
+);
+
+
+// ========================================
+// LÅDHANDTAG
+// ========================================
+
+const drawerHandle =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.5,
+            0.10,
+            0.10
+        ),
+        metalMaterial
+    );
+
+drawerHandle.position.set(
+    x - 1.2,
+    1.48,
+    z + 0.87
+);
+
+scene.add(
+    drawerHandle
+);
+
+
+    // ========================================
+    // KABELHÅL
+    // ========================================
+
+    const cableHole =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.12,
+                0.12,
+                0.04,
+                16
+            ),
+            blackMaterial
+        );
+
+    cableHole.rotation.x =
+        Math.PI / 2;
+
+    cableHole.position.set(
+        x + 1.7,
+        2.22,
+        z - 0.7
+    );
+
+    scene.add(
+        cableHole
+    );
+
+
+    // ========================================
     // GAMMAL DATOR
-    // ----------------------------
+    // ========================================
 
     createComputer(
         x,
         2.3,
         z
     );
+
+createDeskProps(
+    x,
+    2.3,
+    z
+);
+
 
     // ========================================
     // KONTORSSTOL
@@ -2931,6 +3120,8 @@ function createDesk(
     );
 
 }
+
+
 
 // ========================================
 // HYG-INSPIRED OFFICE CHAIR
@@ -3497,7 +3688,7 @@ for (
 
 
 // ========================================
-// OLD COMPUTER
+// OLD SCHOOL BLOCK COMPUTER
 // ========================================
 
 function createComputer(
@@ -3506,51 +3697,115 @@ function createComputer(
     z
 ) {
 
-    const computerMaterial =
+    // Bordsskivans höjd
+    y += 0.89;
+
+    // ====================================
+    // MATERIAL
+    // ====================================
+
+    const computerCaseMaterial =
         new THREE.MeshStandardMaterial({
-            color: 0xE9EED4
+            color: 0xE5D3B3,
+            roughness: 0.85
+        });
+
+    const computerDarkMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x9c988d,
+            roughness: 0.9
+        });
+
+    const screenMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x161918,
+            roughness: 0.5
+        });
+
+    const screenGlassMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x24352f,
+            roughness: 0.3,
+            metalness: 0.05,
+            emissive: 0x10251d,
+            emissiveIntensity: 0.35
+        });
+
+    const blackMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xE5D3B3,
+            roughness: 0.65
         });
 
 
-    // Skärm
-    const screen =
+    // ====================================
+    // CRT-SKÄRM
+    // ====================================
+
+    const monitor =
         new THREE.Mesh(
             new THREE.BoxGeometry(
-                1.8,
-                1.5,
-                0.6
+                2.0,
+                1.65,
+                0.8
             ),
-            computerMaterial
+            computerCaseMaterial
         );
 
-    screen.position.set(
+    monitor.position.set(
         x,
         y,
         z
     );
 
     scene.add(
-        screen
+        monitor
     );
 
 
-    // Skärmglas
+    // ====================================
+    // TJOCK FRAMKANT
+    // ====================================
+
+    const screenFrame =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.55,
+                1.15,
+                0.10
+            ),
+            computerDarkMaterial
+        );
+
+    screenFrame.position.set(
+        x,
+        y + 0.05,
+        z + 0.43
+    );
+
+    scene.add(
+        screenFrame
+    );
+
+
+    // ====================================
+    // CRT-GLAS
+    // ====================================
+
     const glass =
         new THREE.Mesh(
             new THREE.BoxGeometry(
-                1.4,
-                1.05,
-                0.08
+                1.28,
+                0.88,
+                0.06
             ),
-            new THREE.MeshStandardMaterial({
-                color: 0x222222
-            })
+            screenGlassMaterial
         );
 
     glass.position.set(
         x,
-        y,
-        z + 0.32
+        y + 0.05,
+        z + 0.50
     );
 
     scene.add(
@@ -3558,28 +3813,552 @@ function createComputer(
     );
 
 
-    // Tangentbord
+    // ====================================
+    // SKÄRMENS NEDRE PANEL
+    // ====================================
+
+    const lowerPanel =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.55,
+                0.30,
+                0.12
+            ),
+            computerDarkMaterial
+        );
+
+    lowerPanel.position.set(
+        x,
+        y - 0.55,
+        z + 0.46
+    );
+
+    scene.add(
+        lowerPanel
+    );
+
+
+    // ====================================
+    // POWER-KNAPP
+    // ====================================
+
+    const powerButton =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.08,
+                0.08,
+                0.04,
+                12
+            ),
+            blackMaterial
+        );
+
+    powerButton.rotation.x =
+        Math.PI / 2;
+
+    powerButton.position.set(
+        x + 0.52,
+        y - 0.55,
+        z + 0.55
+    );
+
+    scene.add(
+        powerButton
+    );
+
+
+    // ====================================
+    // LITEN LED
+    // ====================================
+
+    const led =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                0.08,
+                0.05,
+                0.03
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x55aa55,
+                emissive: 0x55aa55,
+                emissiveIntensity: 1
+            })
+        );
+
+    led.position.set(
+        x + 0.30,
+        y - 0.55,
+        z + 0.55
+    );
+
+    scene.add(
+        led
+    );
+
+
+    // ====================================
+    // DATORFOT
+    // ====================================
+
+    const stand =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                0.65,
+                0.30,
+                0.55
+            ),
+            computerDarkMaterial
+        );
+
+    stand.position.set(
+        x,
+        y - 0.95,
+        z
+    );
+
+    scene.add(
+        stand
+    );
+
+
+    // ====================================
+    // GAMMAL DATORLÅDA
+    // ====================================
+
+    const tower =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                0.85,
+                1.35,
+                1.15
+            ),
+            computerCaseMaterial
+        );
+
+    tower.position.set(
+        x + 1.80,
+        y - 2.60,
+        z - 0.15
+    );
+
+    scene.add(
+        tower
+    );
+
+
+    // ====================================
+    // CD / DISKETT-LIKNANDE FACK
+    // ====================================
+
+    const drive =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                0.55,
+                0.10,
+                0.04
+            ),
+            blackMaterial
+        );
+
+    drive.position.set(
+        x + 1.80,
+        y - 2.60,
+        z - 0.15
+    );
+
+    scene.add(
+        drive
+    );
+
+
+
+
+
+    // ====================================
+    // TANGENTBORD
+    // ====================================
+
     const keyboard =
         new THREE.Mesh(
             new THREE.BoxGeometry(
-                1.8,
-                0.15,
-                0.7
+                1.9,
+                0.12,
+                0.65
             ),
-            computerMaterial
+            blackMaterial
         );
 
     keyboard.position.set(
         x,
-        3.2,
-        z + 1
+        y - 0.85,
+        z + 0.95
+    );
+
+    keyboard.rotation.x =
+        -0.08;
+
+    scene.add(
+        keyboard
+    );
+
+
+    // ====================================
+    // TANGENTER
+    // ====================================
+
+    const keyMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xE5D3B3,
+            roughness: 0.8
+        });
+
+    for (
+        let row = 0;
+        row < 3;
+        row++
+    ) {
+
+        for (
+            let col = 0;
+            col < 9;
+            col++
+        ) {
+
+            const key =
+                new THREE.Mesh(
+                    new THREE.BoxGeometry(
+                        0.13,
+                        0.025,
+                        0.10
+                    ),
+                    keyMaterial
+                );
+
+            key.position.set(
+                x - 0.62 +
+                col * 0.155,
+
+                y - 0.77,
+
+                z + 0.78 +
+                row * 0.13
+            );
+
+            scene.add(
+                key
+            );
+
+        }
+
+    }
+
+}
+
+// ========================================
+// DESK PROPS
+// ========================================
+
+function createDeskProps(
+    x,
+    y,
+    z
+) {
+
+    // ====================================
+    // MATERIAL
+    // ====================================
+
+    const blackMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x3b3b3b,
+            roughness: 0.7
+        });
+
+    const darkMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.8
+        });
+
+    const whiteMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xe2dfd2,
+            roughness: 0.9
+        });
+
+    const paperMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xd6d0bd,
+            roughness: 1
+        });
+
+    const metalMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x666666,
+            roughness: 0.45,
+            metalness: 0.6
+        });
+
+    const cupMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xddd8c8,
+            roughness: 0.8
+        });
+
+
+    // ====================================
+    // MUSMATTA
+    // ====================================
+
+    const mousePad =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.2,
+                0.035,
+                0.8
+            ),
+            darkMaterial
+        );
+
+    mousePad.position.set(
+        x + 1.25,
+        y - 0.10,
+        z + 0.75
+    );
+
+    scene.add(
+        mousePad
+    );
+
+
+    // ====================================
+    // MUS
+    // ====================================
+
+    const mouse =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                0.18,
+                12,
+                8
+            ),
+            blackMaterial
+        );
+
+    mouse.scale.set(
+        1,
+        0.45,
+        1.3
+    );
+
+    mouse.position.set(
+        x + 1.25,
+        y - 0.02,
+        z + 0.75
+    );
+
+    scene.add(
+        mouse
+    );
+
+
+    // ====================================
+    // TANGENTBORD
+    // ====================================
+
+    const keyboard =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.8,
+                0.10,
+                0.65
+            ),
+            blackMaterial
+        );
+
+    keyboard.position.set(
+        x - 0.25,
+        y - 0.08,
+        z + 0.85
     );
 
     scene.add(
         keyboard
     );
 
+
+    // ====================================
+    // PAPPER
+    // ====================================
+
+    const paper =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                0.8,
+                0.025,
+                1.1
+            ),
+            paperMaterial
+        );
+
+    paper.position.set(
+        x - 1.65,
+        y - 0.08,
+        z + 0.65
+    );
+
+    paper.rotation.y =
+        -0.18;
+
+    scene.add(
+        paper
+    );
+
+
+    // ====================================
+    // KAFFEMUGG
+    // ====================================
+
+    const mug =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.25,
+                0.22,
+                0.45,
+                16
+            ),
+            cupMaterial
+        );
+
+    mug.position.set(
+        x + 1.75,
+        y + 0.15,
+        z - 0.65
+    );
+
+    scene.add(
+        mug
+    );
+
+
+    // ====================================
+    // MUGGÖRA
+    // ====================================
+
+    const handle =
+        new THREE.Mesh(
+            new THREE.TorusGeometry(
+                0.14,
+                0.045,
+                8,
+                16,
+                Math.PI
+            ),
+            cupMaterial
+        );
+
+    handle.rotation.z =
+    Math.PI / 2;
+
+    handle.position.set(
+        x + 1.52,
+        y + 0.15,
+        z - 0.65
+    );
+
+    scene.add(
+        handle
+    );
+
+// ====================================
+// SVART DOKUMENTHÅLLARE
+// ====================================
+
+const documentHolderMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0x181818,
+        roughness: 0.55
+    });
+
+
+// Själva hållaren
+
+const documentHolder =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.9,
+            0.12,
+            1.25
+        ),
+        documentHolderMaterial
+    );
+
+documentHolder.position.set(
+    x - 1.45,
+    y + 0.02,
+    z - 0.55
+);
+
+documentHolder.rotation.y =
+    -0.15;
+
+scene.add(
+    documentHolder
+);
+
+
+// Bakre plastdel
+
+const holderBack =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.9,
+            0.75,
+            0.08
+        ),
+        documentHolderMaterial
+    );
+
+holderBack.position.set(
+    x - 1.45,
+    y + 0.38,
+    z - 1.10
+);
+
+holderBack.rotation.y =
+    -0.15;
+
+scene.add(
+    holderBack
+);
+
+
+// Dokument i hållaren
+
+const document =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.65,
+            0.04,
+            0.9
+        ),
+        documentHolderMaterial
+    );
+
+document.position.set(
+    x - 1.45,
+    y + 0.43,
+    z - 0.60
+);
+
+document.rotation.y =
+    -0.15;
+
+scene.add(
+    document
+);
 }
+    
 
 // ========================================
 // RESIZE
