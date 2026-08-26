@@ -3,9 +3,31 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.m
 import { OBJLoader } from
     "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/OBJLoader.js";
 
+
+const textureLoader =
+    new THREE.TextureLoader();
+
+const mattaTexture =
+    textureLoader.load(
+        "./assets/matta.png"
+    );
+
+mattaTexture.wrapS =
+    THREE.RepeatWrapping;
+
+mattaTexture.wrapT =
+    THREE.RepeatWrapping;
+
+mattaTexture.repeat.set(
+    10,
+    8
+);
+
 // ========================================
 // STOL OBJ
 // ========================================
+
+
 
 const objLoader =
     new OBJLoader();
@@ -259,11 +281,6 @@ const light =
     );
 
 scene.add(light);
-
-
-// ========================================
-// FLOOR
-// ========================================
 
 
 
@@ -1699,14 +1716,13 @@ createDeskBarrier(
 function createOfficeFloor() {
 
     // ========================================
-    // GOLV
+    // GOLVETS BAS
     // ========================================
 
     const floorMaterial =
         new THREE.MeshStandardMaterial({
-            color: 0x4b4b4b,
-            roughness: 0.75,
-            metalness: 0.05
+            color: 0x3b3b3b,
+            roughness: 0.95
         });
 
     const floor =
@@ -1731,52 +1747,36 @@ function createOfficeFloor() {
 
 
     // ========================================
-    // GOLVPLATTOR
+    // MATTA
     // ========================================
 
-    const tileMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x5a5a5a,
-            roughness: 0.85
-        });
+    const carpetMaterial =
+    new THREE.MeshStandardMaterial({
+        map: mattaTexture,
+        color: 0x777777,
+        roughness: 1,
+        metalness: 0
+    });
 
-    const tileSize = 2;
+    const carpet =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                39.8,
+                0.04,
+                29.8
+            ),
+            carpetMaterial
+        );
 
-    for (
-        let x = -19;
-        x < 20;
-        x += tileSize
-    ) {
+    carpet.position.set(
+        0,
+        0.03,
+        0
+    );
 
-        for (
-            let z = -14;
-            z < 15;
-            z += tileSize
-        ) {
-
-            const tile =
-                new THREE.Mesh(
-                    new THREE.BoxGeometry(
-                        1.94,
-                        0.04,
-                        1.94
-                    ),
-                    tileMaterial
-                );
-
-            tile.position.set(
-                x,
-                0.02,
-                z
-            );
-
-            scene.add(
-                tile
-            );
-
-        }
-
-    }
+    scene.add(
+        carpet
+    );
 
 }
 
@@ -3753,7 +3753,7 @@ function createComputer(
         );
 
     monitor.position.set(
-        x,
+        x+ 0.1,
         y,
         z
     );
@@ -4050,6 +4050,8 @@ function createComputer(
 
         }
 
+
+
     }
 
 }
@@ -4269,96 +4271,410 @@ function createDeskProps(
     scene.add(
         handle
     );
-
-// ====================================
-// SVART DOKUMENTHÅLLARE
-// ====================================
-
-const documentHolderMaterial =
-    new THREE.MeshStandardMaterial({
-        color: 0x181818,
-        roughness: 0.55
-    });
-
-
-// Själva hållaren
-
-const documentHolder =
-    new THREE.Mesh(
-        new THREE.BoxGeometry(
-            0.9,
-            0.12,
-            1.25
-        ),
-        documentHolderMaterial
-    );
-
-documentHolder.position.set(
-    x - 1.45,
-    y + 0.02,
-    z - 0.55
-);
-
-documentHolder.rotation.y =
-    -0.15;
-
-scene.add(
-    documentHolder
-);
-
-
-// Bakre plastdel
-
-const holderBack =
-    new THREE.Mesh(
-        new THREE.BoxGeometry(
-            0.9,
-            0.75,
-            0.08
-        ),
-        documentHolderMaterial
-    );
-
-holderBack.position.set(
-    x - 1.45,
-    y + 0.38,
-    z - 1.10
-);
-
-holderBack.rotation.y =
-    -0.15;
-
-scene.add(
-    holderBack
-);
-
-
-// Dokument i hållaren
-
-const document =
-    new THREE.Mesh(
-        new THREE.BoxGeometry(
-            0.65,
-            0.04,
-            0.9
-        ),
-        documentHolderMaterial
-    );
-
-document.position.set(
-    x - 1.45,
-    y + 0.43,
-    z - 0.60
-);
-
-document.rotation.y =
-    -0.15;
-
-scene.add(
-    document
-);
-}
     
+    createOldPhone(
+    x - 1.4,
+    y + 0.15,
+    z - 0.45
+);
+
+// ========================================
+// OLD SCHOOL OFFICE PHONE
+// ========================================
+
+function createOldPhone(
+    x,
+    y,
+    z
+) {
+
+    // ====================================
+    // HELA TELEFONEN
+    // ====================================
+
+    const phoneGroup =
+        new THREE.Group();
+
+    phoneGroup.position.set(
+        x-0.2,
+        y-0.15,
+        z
+    );
+
+    // Lutar telefonen uppåt
+    phoneGroup.rotation.x =
+        0.16;
+
+
+    // ====================================
+    // MATERIAL
+    // ====================================
+
+    const beigeMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xd8d0b5,
+            roughness: 0.8
+        });
+
+    const darkBeigeMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xb0a68c,
+            roughness: 0.85
+        });
+
+    const blackMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x252525,
+            roughness: 0.65
+        });
+
+    const buttonMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x3b3b3b,
+            roughness: 0.7
+        });
+
+
+    // ====================================
+    // TELEFONBAS
+    // ====================================
+
+    const base =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.38,
+                0.27,
+                0.98
+            ),
+            beigeMaterial
+        );
+
+    base.position.set(
+        0,
+        0,
+        0
+    );
+
+    phoneGroup.add(base);
+
+
+    // ====================================
+    // RUNDAD ÖVRE DEL
+    // ====================================
+
+    const topBody =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.28,
+                0.22,
+                0.82
+            ),
+            beigeMaterial
+        );
+
+    topBody.position.set(
+        0,
+        0.16,
+        -0.02
+    );
+
+    phoneGroup.add(topBody);
+
+
+
+
+    // ====================================
+    // FRAMKANT
+    // ====================================
+
+    const frontEdge =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.32,
+                0.08,
+                0.08
+            ),
+            darkBeigeMaterial
+        );
+
+    frontEdge.position.set(
+        0,
+        0.15,
+        0.44
+    );
+
+    phoneGroup.add(frontEdge);
+
+
+    // ====================================
+    // KNAPPAR
+    // ====================================
+
+    const buttonStartX =
+        -0.13;
+
+    const buttonStartZ =
+        0.26;
+
+    const buttonSpacingX =
+        0.28;
+
+    const buttonSpacingZ =
+        0.21;
+
+
+    for (
+        let row = 0;
+        row < 4;
+        row++
+    ) {
+
+        for (
+            let col = 0;
+            col < 3;
+            col++
+        ) {
+
+            const button =
+                new THREE.Mesh(
+                    new THREE.CylinderGeometry(
+                        0.095,
+                        0.095,
+                        0.07,
+                        12
+                    ),
+                    buttonMaterial
+                );
+
+            button.rotation.x =
+                Math.PI / 2;
+
+            button.position.set(
+                buttonStartX +
+                col * buttonSpacingX,
+
+                0.25,
+
+                buttonStartZ -
+                row * buttonSpacingZ
+            );
+
+            phoneGroup.add(
+                button
+            );
+        }
+    }
+
+
+    // ====================================
+    // LURHÅLLARE
+    // ====================================
+
+    const holder =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                0.42,
+                0.12,
+                0.78
+            ),
+            darkBeigeMaterial
+        );
+
+    holder.position.set(
+        -0.40,
+        0.23,
+        -0.03
+    );
+
+    phoneGroup.add(
+        holder
+    );
+
+
+    // ====================================
+    // TELEFONLUR
+    // ====================================
+
+    const handset =
+        new THREE.Mesh(
+            new THREE.CapsuleGeometry(
+                0.14,
+                0.70,
+                6,
+                12
+            ),
+            beigeMaterial
+        );
+
+    handset.rotation.x =
+        Math.PI / 2;
+
+    handset.position.set(
+        -0.40,
+        0.47,
+        -0.03
+    );
+
+    phoneGroup.add(
+        handset
+    );
+
+
+    // ====================================
+    // ÖVRE LURDEL
+    // ====================================
+
+    const topGrip =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                0.22,
+                12,
+                8
+            ),
+            beigeMaterial
+        );
+
+    topGrip.scale.set(
+        1,
+        0.85,
+        0.75
+    );
+
+    topGrip.position.set(
+        -0.40,
+        0.47,
+        -0.48
+    );
+
+    phoneGroup.add(
+        topGrip
+    );
+
+
+    // ====================================
+    // NEDRE LURDEL
+    // ====================================
+
+    const bottomGrip =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                0.22,
+                12,
+                8
+            ),
+            beigeMaterial
+        );
+
+    bottomGrip.scale.set(
+        1,
+        0.85,
+        0.75
+    );
+
+    bottomGrip.position.set(
+        -0.40,
+        0.47,
+        0.42
+    );
+
+    phoneGroup.add(
+        bottomGrip
+    );
+
+
+    // ====================================
+    // HÖGTALARE
+    // ====================================
+
+    const speakerTop =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.105,
+                0.105,
+                0.035,
+                12
+            ),
+            blackMaterial
+        );
+
+    speakerTop.rotation.x =
+        Math.PI / 2;
+
+    speakerTop.position.set(
+        -0.40,
+        0.50,
+        -0.60
+    );
+
+    phoneGroup.add(
+        speakerTop
+    );
+
+
+    const speakerBottom =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.105,
+                0.105,
+                0.035,
+                12
+            ),
+            blackMaterial
+        );
+
+    speakerBottom.rotation.x =
+        Math.PI / 2;
+
+    speakerBottom.position.set(
+        -0.40,
+        0.50,
+        0.54
+    );
+
+    phoneGroup.add(
+        speakerBottom
+    );
+
+
+    // ====================================
+    // LITEN KABEL
+    // ====================================
+
+    const cable =
+        new THREE.Mesh(
+            new THREE.TorusGeometry(
+                0.14,
+                0.025,
+                8,
+                16,
+                Math.PI
+            ),
+            blackMaterial
+        );
+
+    cable.rotation.x =
+        Math.PI / 2;
+
+    cable.position.set(
+        -0.40,
+        0.10,
+        0.45
+    );
+
+    phoneGroup.add(
+        cable
+    );
+
+
+    // ====================================
+    // LÄGG TELEFONEN I SCENEN
+    // ====================================
+
+    scene.add(
+        phoneGroup
+    );
+}
+}
 
 // ========================================
 // RESIZE
@@ -4413,7 +4729,7 @@ camera.position.x =
 if (sittingOnChair) {
 
     camera.position.y =
-        player.position.y + 2.35;
+        player.position.y + 2.70;
 
 } else {
 
