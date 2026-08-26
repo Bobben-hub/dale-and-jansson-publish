@@ -1644,11 +1644,37 @@ function createOffice() {
 
 createOfficeWalls();
 
+createOfficePillars();
+
 createOfficeWindows();
 
 createOfficeDoor();
 
 createCeiling();
+
+// ========================================
+// HYLLOR & SKÅP
+// ========================================
+
+// Stora öppna bruna hyllor
+// Bakvägg (Roterade 0 radianer, placerade längs z = -14.5)
+
+createLargeShelf(15, 0, -14.0, 0);
+
+// Vänster vägg (Roterade PI / 2, placerade längs x = -19.5)
+
+
+createLargeShelf(-19.0, 0, 7.5, Math.PI / 2);
+
+// Höger vägg (Roterade -PI / 2, placerade längs x = 19.5)
+
+createLargeShelf(19.0, 0, -6.5, -Math.PI / 2);
+
+createLargeShelf(19.0, 0, 12, -Math.PI / 2);
+
+
+
+
 
     // ========================================
     // SKRIVBORD
@@ -1792,28 +1818,33 @@ function createOfficeWalls() {
 
     const wallMaterial =
         new THREE.MeshStandardMaterial({
-            color: 0xd8d0c0,
+            color: 0xcfc7b8,
             roughness: 0.9
         });
 
-    const panelMaterial =
+    const lowerWallMaterial =
         new THREE.MeshStandardMaterial({
-            color: 0xc8c0b2,
-            roughness: 1
+            color: 0xaaa296,
+            roughness: 0.95
         });
 
     const trimMaterial =
         new THREE.MeshStandardMaterial({
-            color: 0x8b8172,
+            color: 0x756d62,
             roughness: 0.8
+        });
+
+    const topTrimMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x9b9286,
+            roughness: 0.85
         });
 
 
     // ========================================
-    // VÄGGAR
+    // BAKVÄGG
     // ========================================
 
-    // Bakvägg
     createWall(
         0,
         3,
@@ -1824,45 +1855,101 @@ function createOfficeWalls() {
         wallMaterial
     );
 
-    // Framvägg
+
     // ========================================
-// FRAMVÄGG MED DÖRRÖPPNING
-// ========================================
+    // BAKVÄGG – NEDRE PANEL
+    // ========================================
 
-// Vänster del
-createWall(
-    -11.8,
-    3,
-    15,
-    20.9,
-    6,
-    0.5,
-    wallMaterial
-);
+    createWall(
+        0,
+        1.05,
+        -14.72,
+        40,
+        2.1,
+        0.12,
+        lowerWallMaterial
+    );
 
-// Höger del
-createWall(
-    11.8,
-    3,
-    15,
-    20.9,
-    6,
-    0.5,
-    wallMaterial
-);
 
-// Vägg ovanför dörren
-createWall(
-    0,
-    5.1,
-    15,
-    7.3,
-    1.8,
-    0.5,
-    wallMaterial
-);
+    // ========================================
+    // BAKVÄGG – PANEL-LIST
+    // ========================================
 
-    // Vänster vägg
+    createWall(
+        0,
+        2.08,
+        -14.63,
+        40,
+        0.12,
+        0.10,
+        trimMaterial
+    );
+
+
+    // ========================================
+    // BAKVÄGG – TAKLIST
+    // ========================================
+
+    createWall(
+        0,
+        5.78,
+        -14.68,
+        40,
+        0.25,
+        0.15,
+        topTrimMaterial
+    );
+
+
+    // ========================================
+    // FRAMVÄGG – VÄNSTER DEL
+    // ========================================
+
+    createWall(
+        -11.8,
+        3,
+        15,
+        20.9,
+        6,
+        0.5,
+        wallMaterial
+    );
+
+
+    // ========================================
+    // FRAMVÄGG – HÖGER DEL
+    // ========================================
+
+    createWall(
+        11.8,
+        3,
+        15,
+        20.9,
+        6,
+        0.5,
+        wallMaterial
+    );
+
+
+    // ========================================
+    // FRAMVÄGG – OVANFÖR DÖRREN
+    // ========================================
+
+    createWall(
+        0,
+        5.1,
+        15,
+        7.3,
+        1.8,
+        0.5,
+        wallMaterial
+    );
+
+
+    // ========================================
+    // VÄNSTER VÄGG
+    // ========================================
+
     createWall(
         -20,
         3,
@@ -1873,7 +1960,11 @@ createWall(
         wallMaterial
     );
 
-    // Höger vägg
+
+    // ========================================
+    // HÖGER VÄGG
+    // ========================================
+
     createWall(
         20,
         3,
@@ -1886,207 +1977,613 @@ createWall(
 
 
     // ========================================
-    // GOLVLISTER
+    // VÄNSTER VÄGG – NEDRE PANEL
     // ========================================
 
-    // Bak
     createWall(
+        -19.72,
+        1.05,
         0,
-        0.25,
-        -14.70,
-        39.5,
-        0.35,
         0.12,
-        trimMaterial
+        2.1,
+        30,
+        lowerWallMaterial
     );
 
-    // Fram
+
+    // ========================================
+    // HÖGER VÄGG – NEDRE PANEL
+    // ========================================
+
     createWall(
+        19.72,
+        1.05,
         0,
-        0.25,
-        14.70,
-        39.5,
-        0.35,
         0.12,
-        trimMaterial
+        2.1,
+        30,
+        lowerWallMaterial
     );
 
-    // Vänster
-    createWall(
-        -19.70,
-        0.25,
-        0,
-        0.12,
-        0.35,
-        29.5,
-        trimMaterial
-    );
 
-    // Höger
+    // ========================================
+    // VÄNSTER VÄGG – LIST
+    // ========================================
+
     createWall(
-        19.70,
-        0.25,
+        -19.63,
+        2.08,
         0,
+        0.10,
         0.12,
-        0.35,
-        29.5,
+        30,
         trimMaterial
     );
 
 
     // ========================================
-    // VÄGGPANELER
+    // HÖGER VÄGG – LIST
     // ========================================
 
-    // ----------------------------
-    // BAKVÄGG
-    // ----------------------------
+    createWall(
+        19.63,
+        2.08,
+        0,
+        0.10,
+        0.12,
+        30,
+        trimMaterial
+    );
+
+
+    // ========================================
+    // VÄNSTER VÄGG – TAKLIST
+    // ========================================
+
+    createWall(
+        -19.68,
+        5.78,
+        0,
+        0.15,
+        0.25,
+        30,
+        topTrimMaterial
+    );
+
+
+    // ========================================
+    // HÖGER VÄGG – TAKLIST
+    // ========================================
+
+    createWall(
+        19.68,
+        5.78,
+        0,
+        0.15,
+        0.25,
+        30,
+        topTrimMaterial
+    );
+
+
+    // ========================================
+    // FRAMVÄGG – NEDRE PANEL VÄNSTER
+    // ========================================
+
+    createWall(
+        -11.8,
+        1.05,
+        14.72,
+        20.9,
+        2.1,
+        0.12,
+        lowerWallMaterial
+    );
+
+
+    // ========================================
+    // FRAMVÄGG – NEDRE PANEL HÖGER
+    // ========================================
+
+    createWall(
+        11.8,
+        1.05,
+        14.72,
+        20.9,
+        2.1,
+        0.12,
+        lowerWallMaterial
+    );
+
+
+    // ========================================
+    // FRAMVÄGG – LIST VÄNSTER
+    // ========================================
+
+    createWall(
+        -11.8,
+        2.08,
+        14.63,
+        20.9,
+        0.12,
+        0.10,
+        trimMaterial
+    );
+
+
+    // ========================================
+    // FRAMVÄGG – LIST HÖGER
+    // ========================================
+
+    createWall(
+        11.8,
+        2.08,
+        14.63,
+        20.9,
+        0.12,
+        0.10,
+        trimMaterial
+    );
+
+
+    // ========================================
+    // FRAMVÄGG – TAKLIST VÄNSTER
+    // ========================================
+
+    createWall(
+        -11.8,
+        5.78,
+        14.68,
+        20.9,
+        0.25,
+        0.15,
+        topTrimMaterial
+    );
+
+
+    // ========================================
+    // FRAMVÄGG – TAKLIST HÖGER
+    // ========================================
+
+    createWall(
+        11.8,
+        5.78,
+        14.68,
+        20.9,
+        0.25,
+        0.15,
+        topTrimMaterial
+    );
+
+}
+
+// ========================================
+// SMALL GREY CABINET
+// ========================================
+
+function createSmallCabinet(
+    x,
+    y,
+    z,
+    rotationY = 0
+) {
+
+    // ====================================
+    // MATERIAL
+    // ====================================
+
+    const cabinetMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x77736b,
+            roughness: 0.75
+        });
+
+    const doorMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x696760,
+            roughness: 0.7
+        });
+
+    const handleMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x3b3b38,
+            roughness: 0.5,
+            metalness: 0.3
+        });
+
+
+    // ====================================
+    // HUVUDKROPP
+    // ====================================
+
+    const cabinet =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                2.4,
+                2.5,
+                0.75
+            ),
+            cabinetMaterial
+        );
+
+    cabinet.position.set(
+        x,
+        y + 1.25,
+        z
+    );
+
+    cabinet.rotation.y =
+        rotationY;
+
+    scene.add(
+        cabinet
+    );
+
+
+    // ====================================
+    // FRAMDEL
+    // ====================================
+
+    const front =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                2.15,
+                2.25,
+                0.08
+            ),
+            doorMaterial
+        );
+
+    front.position.set(
+        0,
+        0,
+        0.40
+    );
+
+    // Lägg fronten i samma riktning
+    // som skåpet
+    front.position.applyAxisAngle(
+        new THREE.Vector3(0, 1, 0),
+        rotationY
+    );
+
+    front.position.x += x;
+    front.position.y += y + 1.25;
+    front.position.z += z;
+
+    front.rotation.y =
+        rotationY;
+
+    scene.add(
+        front
+    );
+
+
+    // ====================================
+    // DÖRRDELNING
+    // ====================================
+
+    const divider =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                0.04,
+                2.15,
+                0.09
+            ),
+            cabinetMaterial
+        );
+
+    divider.position.set(
+        0,
+        0,
+        0.45
+    );
+
+    divider.position.applyAxisAngle(
+        new THREE.Vector3(0, 1, 0),
+        rotationY
+    );
+
+    divider.position.x += x;
+    divider.position.y += y + 1.25;
+    divider.position.z += z;
+
+    divider.rotation.y =
+        rotationY;
+
+    scene.add(
+        divider
+    );
+
+
+    // ====================================
+    // HANDTAG
+    // ====================================
+
+    function addHandle(offsetX) {
+
+        const handle =
+            new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    0.07,
+                    0.25,
+                    0.07
+                ),
+                handleMaterial
+            );
+
+        handle.position.set(
+            offsetX,
+            1.25,
+            0.50
+        );
+
+        handle.position.applyAxisAngle(
+            new THREE.Vector3(0, 1, 0),
+            rotationY
+        );
+
+        handle.position.x += x;
+        handle.position.y += y;
+        handle.position.z += z;
+
+        handle.rotation.y =
+            rotationY;
+
+        scene.add(
+            handle
+        );
+    }
+
+    addHandle(-0.42);
+    addHandle(0.42);
+
+
+    // ====================================
+    // TOPP
+    // ====================================
+
+    const top =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                2.5,
+                0.12,
+                0.82
+            ),
+            cabinetMaterial
+        );
+
+    top.position.set(
+        x,
+        y + 2.56,
+        z
+    );
+
+    top.rotation.y =
+        rotationY;
+
+    scene.add(
+        top
+    );
+}
+
+// ========================================
+// STOR ÖPPEN BRUN HYLLA
+// ========================================
+
+function createLargeShelf(
+    x,
+    y,
+    z,
+    rotationY = 0
+) {
+
+    const woodMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x6b4226,
+            roughness: 0.85
+        });
+
+    const darkWoodMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x4a2d1a,
+            roughness: 0.9
+        });
+
+
+    const shelf =
+        new THREE.Group();
+
+    shelf.position.set(
+        x,
+        y,
+        z
+    );
+
+    shelf.rotation.y =
+        rotationY;
+
+
+    // ====================================
+    // SIDOSTYCKEN
+    // ====================================
+
+    const leftSide =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                0.35,
+                4.2,
+                0.55
+            ),
+            woodMaterial
+        );
+
+    leftSide.position.set(
+        -2.25,
+        2.1,
+        0
+    );
+
+    shelf.add(leftSide);
+
+
+    const rightSide =
+        leftSide.clone();
+
+    rightSide.position.x =
+        2.25;
+
+    shelf.add(rightSide);
+
+
+    // ====================================
+    // HYLLPLAN
+    // ====================================
+
+    const shelfHeights = [
+        0.15,
+        1.25,
+        2.35,
+        3.45
+    ];
 
     for (
-        let x = -18;
-        x <= 18;
-        x += 4
+        const height of shelfHeights
     ) {
 
-        createWall(
-            x,
-            2.6,
-            -14.70,
-            3.7,
-            4.6,
-            0.06,
-            panelMaterial
+        const shelfBoard =
+            new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    4.85,
+                    0.25,
+                    0.65
+                ),
+                woodMaterial
+            );
+
+        shelfBoard.position.set(
+            0,
+            height,
+            0
+        );
+
+        shelf.add(
+            shelfBoard
         );
 
     }
 
 
-// ----------------------------
-// FRAMVÄGG
-// ----------------------------
+    // ====================================
+    // BAKSTYCKE
+    // ====================================
 
-// Panelerna ska INTE täcka dörröppningen.
+    const back =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                4.85,
+                4.2,
+                0.18
+            ),
+            darkWoodMaterial
+        );
 
-for (
-    let x = -18;
-    x <= 18;
-    x += 4
-) {
+    back.position.set(
+        0,
+        2.1,
+        -0.28
+    );
 
-    // Lämna öppet runt dörren
-    if (
-        x > -4 &&
-        x < 4
-    ) {
-        continue;
-    }
+    shelf.add(back);
 
-    createWall(
-        x,
-        2.6,
-        14.70,
-        3.7,
-        4.6,
-        0.06,
-        panelMaterial
+
+    // ====================================
+    // LÄGG TILL I SCENEN
+    // ====================================
+
+    scene.add(
+        shelf
     );
 
 }
 
 
-    // ----------------------------
-    // VÄNSTER VÄGG
-    // ----------------------------
+// Bakväggen
+createSmallCabinet(-14, 0, -14.5, 0);
+createSmallCabinet(-10, 0, -14.5, 0);
+
+// Vänster vägg
+createSmallCabinet(-19.5, 0, -8, Math.PI / 2);
+createSmallCabinet(-19.5, 0, -3, Math.PI / 2);
+
+// Höger vägg
+createSmallCabinet(19.5, 0, 7, -Math.PI / 2);
+createSmallCabinet(19.5, 0, 2, -Math.PI / 2);
+
+// ========================================
+// BEIGE PELARE
+// ========================================
+
+function createOfficePillars() {
+
+    const pillarMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x756d62,
+            roughness: 0.85
+        });
+
+    const pillarWidth = 0.75;
+    const pillarDepth = 0.75;
+    const pillarHeight = 6;
+
+    const positions = [
+
+        // Bakvägg
+        [-14, 3, -14.65],
+        [-7, 3, -14.65],
+        [0, 3, -14.65],
+        [7, 3, -14.65],
+        [14, 3, -14.65],
+
+        // Vänster vägg
+        [-19.65, 3, -10],
+        [-19.65, 3, -3],
+        [-19.65, 3, 4],
+        [-19.65, 3, 11],
+
+        // Höger vägg
+        [19.65, 3, -10],
+        [19.65, 3, -3],
+        [19.65, 3, 4],
+        [19.65, 3, 11]
+
+    ];
 
     for (
-        let z = -13;
-        z <= 13;
-        z += 4
+        const position of positions
     ) {
 
-        createWall(
-            -19.70,
-            2.6,
-            z,
-            0.06,
-            4.6,
-            3.7,
-            panelMaterial
+        const pillar =
+            new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    pillarWidth,
+                    pillarHeight,
+                    pillarDepth
+                ),
+                pillarMaterial
+            );
+
+        pillar.position.set(
+            position[0],
+            position[1],
+            position[2]
+        );
+
+        scene.add(
+            pillar
         );
 
     }
-
-
-    // ----------------------------
-    // HÖGER VÄGG
-    // ----------------------------
-
-    for (
-        let z = -13;
-        z <= 13;
-        z += 4
-    ) {
-
-        createWall(
-            19.70,
-            2.6,
-            z,
-            0.06,
-            4.6,
-            3.7,
-            panelMaterial
-        );
-
-    }
-
-
-    // ========================================
-    // ÖVRE VÄGGLISTER
-    // ========================================
-
-    // Bakvägg
-    createWall(
-        0,
-        5.25,
-        -14.68,
-        39.5,
-        0.18,
-        0.10,
-        trimMaterial
-    );
-
-    // Framvägg
-    createWall(
-        0,
-        5.25,
-        14.68,
-        39.5,
-        0.18,
-        0.10,
-        trimMaterial
-    );
-
-    // Vänster vägg
-    createWall(
-        -19.68,
-        5.25,
-        0,
-        0.10,
-        0.18,
-        29.5,
-        trimMaterial
-    );
-
-    // Höger vägg
-    createWall(
-        19.68,
-        5.25,
-        0,
-        0.10,
-        0.18,
-        29.5,
-        trimMaterial
-    );
 
 }
 
