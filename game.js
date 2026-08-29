@@ -259,20 +259,36 @@ camera.position.set(
 // DALE AND JANSSON
 // ========================================
 
-// Försök upptäcka svagare enheter
 const cpuCores =
     navigator.hardwareConcurrency || 4;
 
+const userAgent =
+    navigator.userAgent || "";
+
+
+// ========================================
+// ENHET
+// ========================================
+
+const isXbox =
+    /Xbox/i.test(userAgent);
+
 const isMobile =
     /Android|iPhone|iPad|iPod/i.test(
-        navigator.userAgent
+        userAgent
     );
 
-// Svagare enheter får lägre grafik.
-// Vi behåller ändå färger, modeller och
-// det beigea ljuset.
+
+// ========================================
+// GRAFIKLÄGE
+// ========================================
+
 const lowGraphics =
     cpuCores <= 4;
+
+const performanceMode =
+    lowGraphics ||
+    isXbox;
 
 
 // ========================================
@@ -281,23 +297,20 @@ const lowGraphics =
 
 const renderer =
     new THREE.WebGLRenderer({
-        antialias: !lowGraphics
+        antialias: !performanceMode,
+        powerPreference: "high-performance"
     });
 
 
 // ========================================
-// SKUGGOR
+// INGA SKUGGOR
 // ========================================
 
-renderer.shadowMap.enabled =
-    !lowGraphics;
-
-renderer.shadowMap.type =
-    THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = false;
 
 
 // ========================================
-// SKÄRMSTORLEK
+// SKÄRM
 // ========================================
 
 renderer.setSize(
@@ -310,7 +323,17 @@ renderer.setSize(
 // PIXELRATIO
 // ========================================
 
-if (lowGraphics) {
+if (isXbox) {
+
+    // Xbox Edge får lägre intern
+    // renderupplösning för att minska
+    // GPU- och minnesbelastningen.
+
+    renderer.setPixelRatio(
+        0.75
+    );
+
+} else if (performanceMode) {
 
     renderer.setPixelRatio(
         1
@@ -329,21 +352,15 @@ if (lowGraphics) {
 
 
 // ========================================
-// WEBGL OPTIMERING
+// FÄRG
 // ========================================
 
 renderer.outputColorSpace =
     THREE.SRGBColorSpace;
 
-renderer.toneMapping =
-    THREE.ACESFilmicToneMapping;
-
-renderer.toneMappingExposure =
-    1.0;
-
 
 // ========================================
-// LÄGG TILL SPELET
+// SPELET
 // ========================================
 
 document
