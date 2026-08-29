@@ -3314,7 +3314,7 @@ function createLargeShelf(
 }
 
 // ========================================
-// FYLL HYLLAN MED DETALJER
+// FYLL HYLLAN MED OPTIMERADE DETALJER
 // ========================================
 
 function fillOfficeShelf(
@@ -3324,7 +3324,8 @@ function fillOfficeShelf(
     rotationY = 0
 ) {
 
-    const shelfGroup = new THREE.Group();
+    const shelfGroup =
+        new THREE.Group();
 
     shelfGroup.position.set(
         shelfX,
@@ -3389,7 +3390,7 @@ function fillOfficeShelf(
 
 
     // ====================================
-    // HJÄLPFUNKTION
+    // LÄGG TILL LITET OBJEKT
     // ====================================
 
     function addBox(
@@ -3422,10 +3423,9 @@ function fillOfficeShelf(
         object.rotation.y =
             rotation;
 
-        // Små hyllprylar behöver inga skuggor.
-// Detta minskar belastningen rejält på Xbox och svagare datorer.
-object.castShadow = false;
-object.receiveShadow = false;
+        // INGA SKUGGOR PÅ HYLLPRYLAR
+        object.castShadow = false;
+        object.receiveShadow = false;
 
         shelfGroup.add(
             object
@@ -3450,33 +3450,16 @@ object.receiveShadow = false;
         rotation = 0
     ) {
 
-        const box =
-            addBox(
-                x,
-                y,
-                z,
-                width,
-                height,
-                depth,
-                material,
-                rotation
-            );
-
-
-        // Liten tejpremsa ovanpå
-        addBox(
+        return addBox(
             x,
-            y + height / 2 + 0.008,
+            y,
             z,
-            0.10,
-            0.018,
-            depth * 0.85,
-            cardboardDarkMaterial,
+            width,
+            height,
+            depth,
+            material,
             rotation
         );
-
-
-        return box;
     }
 
 
@@ -3488,42 +3471,25 @@ object.receiveShadow = false;
         x,
         y,
         z,
-        colorMaterial,
+        material,
         rotation = 0
     ) {
 
-        const binder =
-            addBox(
-                x,
-                y,
-                z,
-                0.38,
-                0.85,
-                0.72,
-                colorMaterial,
-                rotation
-            );
-
-
-        // Etikett på framsidan
-        addBox(
+        return addBox(
             x,
             y,
-            z + 0.365,
-            0.22,
-            0.24,
-            0.018,
-            paperMaterial,
+            z,
+            0.38,
+            0.85,
+            0.72,
+            material,
             rotation
         );
-
-
-        return binder;
     }
 
 
     // ====================================
-    // METALLBURK
+    // BURK
     // ====================================
 
     function addContainer(
@@ -3540,7 +3506,7 @@ object.receiveShadow = false;
                     0.16 * scale,
                     0.16 * scale,
                     0.55 * scale,
-                    12
+                    8
                 ),
                 material
             );
@@ -3555,35 +3521,10 @@ object.receiveShadow = false;
             Math.random() * Math.PI;
 
         container.castShadow = false;
-container.receiveShadow = false;
+        container.receiveShadow = false;
 
         shelfGroup.add(
             container
-        );
-
-
-        // Lock
-        const lid =
-            new THREE.Mesh(
-                new THREE.CylinderGeometry(
-                    0.17 * scale,
-                    0.17 * scale,
-                    0.035 * scale,
-                    12
-                ),
-                metalMaterial
-            );
-
-        lid.position.set(
-            x,
-            y + 0.285 * scale,
-            z
-        );
-
-        lid.castShadow = false;
-
-        shelfGroup.add(
-            lid
         );
     }
 
@@ -3599,81 +3540,59 @@ container.receiveShadow = false;
     ) {
 
         const potMaterial =
-            new THREE.MeshStandardMaterial({
-                color: 0x76513b,
-                roughness: 0.9
-            });
+            cardboardDarkMaterial;
 
 
-        const pot =
-            new THREE.Mesh(
-                new THREE.CylinderGeometry(
-                    0.20,
-                    0.16,
-                    0.28,
-                    12
-                ),
-                potMaterial
-            );
+        // KRUKA
 
-        pot.position.set(
+        addBox(
             x,
             y,
+            z,
+            0.35,
+            0.30,
+            0.35,
+            potMaterial
+        );
+
+
+        // Ett enda billigt blad-kluster
+        // istället för flera sfärer.
+
+        const leaves =
+            new THREE.Mesh(
+                new THREE.SphereGeometry(
+                    0.25,
+                    6,
+                    4
+                ),
+                greenMaterial
+            );
+
+        leaves.scale.set(
+            1,
+            1.35,
+            0.8
+        );
+
+        leaves.position.set(
+            x,
+            y + 0.30,
             z
         );
 
+        leaves.castShadow = false;
+        leaves.receiveShadow = false;
+
         shelfGroup.add(
-            pot
+            leaves
         );
-
-
-        // Stjälkar
-        for (
-            let i = 0;
-            i < 4;
-            i++
-        ) {
-
-            const leaf =
-                new THREE.Mesh(
-                    new THREE.SphereGeometry(
-                        0.13,
-                        8,
-                        6
-                    ),
-                    greenMaterial
-                );
-
-            leaf.scale.set(
-                0.7,
-                1.3,
-                0.7
-            );
-
-            leaf.position.set(
-                x +
-                (i - 1.5) * 0.10,
-
-                y +
-                0.28 +
-                Math.abs(i - 1.5) * 0.04,
-
-                z
-            );
-
-            shelfGroup.add(
-                leaf
-            );
-            
-            leaf.castShadow = false;
-leaf.receiveShadow = false;
-        }
     }
 
 
-    // ====================================
+    // ========================================
     // HYLLA 1
-    // ====================================
+    // ========================================
 
     addBoxPackage(
         -1.55,
@@ -3730,9 +3649,9 @@ leaf.receiveShadow = false;
     );
 
 
-    // ====================================
+    // ========================================
     // HYLLA 2
-    // ====================================
+    // ========================================
 
     addBinder(
         -1.70,
@@ -3784,9 +3703,9 @@ leaf.receiveShadow = false;
     );
 
 
-    // ====================================
+    // ========================================
     // HYLLA 3
-    // ====================================
+    // ========================================
 
     addBoxPackage(
         -1.75,
@@ -3843,9 +3762,9 @@ leaf.receiveShadow = false;
     );
 
 
-    // ====================================
+    // ========================================
     // HYLLA 4
-    // ====================================
+    // ========================================
 
     addPlant(
         -1.65,
