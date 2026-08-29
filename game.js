@@ -208,6 +208,57 @@ const SERVER_URL =
 
 let socket = null;
 
+
+// ========================================
+// DALE AND JANSSON
+// ENHET & PRESTANDA
+// ========================================
+
+const userAgent =
+    navigator.userAgent || "";
+
+const isXbox =
+    /Xbox/i.test(userAgent);
+
+const isMobile =
+    /Android|iPhone|iPad|iPod/i.test(
+        userAgent
+    );
+
+const cpuCores =
+    navigator.hardwareConcurrency || 4;
+
+const isWeakDevice =
+    cpuCores <= 4;
+
+
+// ========================================
+// PRESTANDANIVÅ
+// ========================================
+
+let performanceLevel = "high";
+
+if (isXbox) {
+
+    performanceLevel = "xbox";
+
+} else if (isMobile) {
+
+    performanceLevel = "mobile";
+
+} else if (isWeakDevice) {
+
+    performanceLevel = "low";
+
+}
+
+
+console.log(
+    "Dale and Jansson performance:",
+    performanceLevel
+);
+
+
 // ========================================
 // MULTIPLAYER PLAYERS
 // ========================================
@@ -259,24 +310,18 @@ camera.position.set(
 // DALE AND JANSSON
 // ========================================
 
-const cpuCores =
-    navigator.hardwareConcurrency || 4;
 
-const userAgent =
-    navigator.userAgent || "";
+
+
 
 
 // ========================================
 // ENHET
 // ========================================
 
-const isXbox =
-    /Xbox/i.test(userAgent);
 
-const isMobile =
-    /Android|iPhone|iPad|iPod/i.test(
-        userAgent
-    );
+
+
 
 
 // ========================================
@@ -3377,8 +3422,10 @@ function fillOfficeShelf(
         object.rotation.y =
             rotation;
 
-        object.castShadow = true;
-        object.receiveShadow = true;
+        // Små hyllprylar behöver inga skuggor.
+// Detta minskar belastningen rejält på Xbox och svagare datorer.
+object.castShadow = false;
+object.receiveShadow = false;
 
         shelfGroup.add(
             object
@@ -3507,8 +3554,8 @@ function fillOfficeShelf(
         container.rotation.y =
             Math.random() * Math.PI;
 
-        container.castShadow = true;
-        container.receiveShadow = true;
+        container.castShadow = false;
+container.receiveShadow = false;
 
         shelfGroup.add(
             container
@@ -3533,7 +3580,7 @@ function fillOfficeShelf(
             z
         );
 
-        lid.castShadow = true;
+        lid.castShadow = false;
 
         shelfGroup.add(
             lid
@@ -3617,6 +3664,9 @@ function fillOfficeShelf(
             shelfGroup.add(
                 leaf
             );
+            
+            leaf.castShadow = false;
+leaf.receiveShadow = false;
         }
     }
 
