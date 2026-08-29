@@ -4,24 +4,7 @@ import { OBJLoader } from
     "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/OBJLoader.js";
 
 
-const textureLoader =
-    new THREE.TextureLoader();
 
-const mattaTexture =
-    textureLoader.load(
-        "./assets/matta.png"
-    );
-
-mattaTexture.wrapS =
-    THREE.RepeatWrapping;
-
-mattaTexture.wrapT =
-    THREE.RepeatWrapping;
-
-mattaTexture.repeat.set(
-    10,
-    8
-);
 
 // ========================================
 // STOL OBJ
@@ -181,6 +164,37 @@ pendingChairs.length = 0;
 
 
 // ========================================
+// TOALETT
+// ========================================
+
+let toiletDoor = null;
+
+let toiletDoorOpen = false;
+let toiletDoorAnimating = false;
+
+let toiletRoom = null;
+
+
+const textureLoader =
+    new THREE.TextureLoader();
+
+const mattaTexture =
+    textureLoader.load(
+        "./assets/matta.png"
+    );
+
+mattaTexture.wrapS =
+    THREE.RepeatWrapping;
+
+mattaTexture.wrapT =
+    THREE.RepeatWrapping;
+
+mattaTexture.repeat.set(
+    10,
+    8
+);
+
+// ========================================
 // SERVER
 // ========================================
 
@@ -241,37 +255,107 @@ camera.position.set(
 
 
 // ========================================
+// PERFORMANCE SYSTEM
+// DALE AND JANSSON
+// ========================================
+
+// Försök upptäcka svagare enheter
+const cpuCores =
+    navigator.hardwareConcurrency || 4;
+
+const isMobile =
+    /Android|iPhone|iPad|iPod/i.test(
+        navigator.userAgent
+    );
+
+// Svagare enheter får lägre grafik.
+// Vi behåller ändå färger, modeller och
+// det beigea ljuset.
+const lowGraphics =
+    cpuCores <= 4;
+
+
+// ========================================
 // RENDERER
 // ========================================
 
 const renderer =
     new THREE.WebGLRenderer({
-        antialias: true
+        antialias: !lowGraphics
     });
 
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
+// ========================================
+// SKUGGOR
+// ========================================
+
+renderer.shadowMap.enabled =
+    !lowGraphics;
+
+renderer.shadowMap.type =
+    THREE.PCFSoftShadowMap;
+
+
+// ========================================
+// SKÄRMSTORLEK
+// ========================================
 
 renderer.setSize(
     window.innerWidth,
     window.innerHeight
 );
 
-renderer.setPixelRatio(
-    Math.min(
-        window.devicePixelRatio,
-        2
-    )
-);
+
+// ========================================
+// PIXELRATIO
+// ========================================
+
+if (lowGraphics) {
+
+    renderer.setPixelRatio(
+        1
+    );
+
+} else {
+
+    renderer.setPixelRatio(
+        Math.min(
+            window.devicePixelRatio,
+            1.5
+        )
+    );
+
+}
+
+
+// ========================================
+// WEBGL OPTIMERING
+// ========================================
+
+renderer.outputColorSpace =
+    THREE.SRGBColorSpace;
+
+renderer.toneMapping =
+    THREE.ACESFilmicToneMapping;
+
+renderer.toneMappingExposure =
+    1.0;
+
+
+// ========================================
+// LÄGG TILL SPELET
+// ========================================
 
 document
     .getElementById("game")
     .appendChild(
         renderer.domElement
     );
+
 renderer.domElement.style.touchAction =
     "none";
+
+
 
 // ========================================
 // STATIC OFFICE SHADOW LIGHT
@@ -4103,6 +4187,21 @@ window.addEventListener(
     }
 );
 
+window.addEventListener(
+    "keydown",
+    (event) => {
+
+        if (
+            event.key.toLowerCase() !== "e"
+        ) {
+            return;
+        }
+
+        tryOpenToiletDoor();
+
+    }
+);
+
 // ========================================
 // CHAIR E INTERACTION
 // ========================================
@@ -7852,19 +7951,33 @@ function createCorridor() {
     );
 
 
-    // ====================================
-    // HÖGER VÄGG
-    // ====================================
+    // ========================================
+// HÖGER KORRIDORVÄGG
+// MED ÖPPNING TILL BADRUMMET
+// ========================================
 
-    createCorridorWall(
-        3.5,
-        3,
-        0,
-        0.25,
-        6,
-        24,
-        wallMaterial
-    );
+// Vägg före badrumsöppningen
+createCorridorWall(
+    3.5,
+    3,
+    -7,
+    0.25,
+    6,
+    10,
+    wallMaterial
+);
+
+
+// Vägg efter badrumsöppningen
+createCorridorWall(
+    3.5,
+    3,
+    7,
+    0.25,
+    6,
+    10,
+    wallMaterial
+);
 
 
     // ====================================
@@ -8384,7 +8497,815 @@ function createCorridorWallPanel(
 
 createCorridor();
 
+// ========================================
+// TOALETT
+// ========================================
 
+function createToiletRoom() {
+
+    toiletRoom =
+        new THREE.Group();
+
+    scene.add(
+        toiletRoom
+    );
+
+
+    // ====================================
+    // MATERIAL
+    // ====================================
+
+    const wallMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xd8d2c2,
+            roughness: 0.9
+        });
+
+    const floorMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xb7b0a0,
+            roughness: 0.9
+        });
+
+    const darkMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x555555,
+            roughness: 0.7
+        });
+
+    const whiteMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xe8e5dc,
+            roughness: 0.8
+        });
+
+
+    // ====================================
+    // POSITION
+    // ====================================
+
+    toiletRoom.position.set(
+    7,
+    0,
+    26.8
+);
+
+toiletRoom.rotation.y =
+    Math.PI / 2;
+
+
+    // ====================================
+    // GOLV
+    // ====================================
+
+    const floor =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                7,
+                0.15,
+                8
+            ),
+            floorMaterial
+        );
+
+    floor.position.set(
+        0,
+        0,
+        0
+    );
+
+    floor.receiveShadow = true;
+
+    toiletRoom.add(
+        floor
+    );
+
+
+    // ====================================
+    // VÄNSTER VÄGG
+    // ====================================
+
+    const leftWall =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                0.25,
+                6,
+                8
+            ),
+            wallMaterial
+        );
+
+    leftWall.position.set(
+        -3.5,
+        3,
+        0
+    );
+
+    toiletRoom.add(
+        leftWall
+    );
+
+
+    // ====================================
+    // HÖGER VÄGG
+    // ====================================
+
+    const rightWall =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                0.25,
+                6,
+                8
+            ),
+            wallMaterial
+        );
+
+    rightWall.position.set(
+        3.5,
+        3,
+        0
+    );
+
+    toiletRoom.add(
+        rightWall
+    );
+
+
+    // ====================================
+    // BAKVÄGG
+    // ====================================
+
+    const backWall =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                7,
+                6,
+                0.25
+            ),
+            wallMaterial
+        );
+
+    backWall.position.set(
+        0,
+        3,
+        4
+    );
+
+    toiletRoom.add(
+        backWall
+    );
+
+
+    // ====================================
+    // FRAMVÄGGAR
+    // DÖRREN ÄR I MITTEN
+    // ====================================
+
+    const frontLeft =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                2.45,
+                6,
+                0.25
+            ),
+            wallMaterial
+        );
+
+    frontLeft.position.set(
+        -2.275,
+        3,
+        -4
+    );
+
+    toiletRoom.add(
+        frontLeft
+    );
+
+
+    const frontRight =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                2.45,
+                6,
+                0.25
+            ),
+            wallMaterial
+        );
+
+    frontRight.position.set(
+        2.275,
+        3,
+        -4
+    );
+
+    toiletRoom.add(
+        frontRight
+    );
+
+
+    // ====================================
+    // VÄGG OVANFÖR DÖRREN
+    // ====================================
+
+    const frontTop =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                2.55,
+                2,
+                0.25
+            ),
+            wallMaterial
+        );
+
+    frontTop.position.set(
+        0,
+        5,
+        -4
+    );
+
+    toiletRoom.add(
+        frontTop
+    );
+
+
+    // ====================================
+    // DÖRR
+    // ====================================
+
+    createToiletDoor(
+        0,
+        0,
+        -4
+    );
+
+
+    // ====================================
+    // TOALETT
+    // ====================================
+
+    createToilet(
+        -1.9,
+        0,
+        2.3
+    );
+
+
+    // ====================================
+    // HANDFAST
+    // ====================================
+
+    createSink(
+        1.8,
+        0,
+        2.7
+    );
+
+
+    // ====================================
+    // SPEGEL
+    // ====================================
+
+    createBathroomMirror(
+        1.8,
+        3.1,
+        2.9
+    );
+
+
+    // ====================================
+    // PAPPERSHÅLLARE
+    // ====================================
+
+    createToiletPaper(
+        -1.9,
+        1.0,
+        1.2
+    );
+
+
+    // ====================================
+    // TAK
+    // ====================================
+
+    const ceiling =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                7,
+                0.2,
+                8
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0xe9eed4,
+                roughness: 0.9
+            })
+        );
+
+    ceiling.position.set(
+        0,
+        6,
+        0
+    );
+
+    toiletRoom.add(
+        ceiling
+    );
+
+}
+
+
+// ========================================
+// TOALETTDÖRR
+// ========================================
+
+function createToiletDoor(
+    x,
+    y,
+    z
+) {
+
+    const doorGroup =
+        new THREE.Group();
+
+    doorGroup.position.set(
+        x - 1.25,
+        y,
+        z
+    );
+
+    toiletRoom.add(
+        doorGroup
+    );
+
+
+    const doorMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x70452a,
+            roughness: 0.8
+        });
+
+
+    const door =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                2.5,
+                4.8,
+                0.18
+            ),
+            doorMaterial
+        );
+
+    door.position.set(
+        1.25,
+        2.4,
+        0
+    );
+
+    door.castShadow = true;
+
+    doorGroup.add(
+        door
+    );
+
+
+    // ====================================
+    // HANDTAG
+    // ====================================
+
+    const handle =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                0.10,
+                12,
+                8
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0xc5a35a,
+                metalness: 0.7,
+                roughness: 0.3
+            })
+        );
+
+    handle.position.set(
+        2.0,
+        2.35,
+        0.16
+    );
+
+    doorGroup.add(
+        handle
+    );
+
+
+    toiletDoor =
+        doorGroup;
+}
+
+
+// ========================================
+// ÖPPNA TOALETTDÖRR
+// ========================================
+
+function tryOpenToiletDoor() {
+
+    if (
+        !toiletDoor ||
+        toiletDoorAnimating
+    ) {
+        return;
+    }
+
+
+    toiletDoorOpen =
+        !toiletDoorOpen;
+
+    toiletDoorAnimating =
+        true;
+
+}
+
+
+// ========================================
+// UPPDATERA TOALETTDÖRR
+// ========================================
+
+function updateToiletDoor() {
+
+    if (
+        !toiletDoor ||
+        !toiletDoorAnimating
+    ) {
+        return;
+    }
+
+
+    const targetRotation =
+        toiletDoorOpen
+            ? -Math.PI / 2
+            : 0;
+
+
+    toiletDoor.rotation.y =
+        THREE.MathUtils.lerp(
+            toiletDoor.rotation.y,
+            targetRotation,
+            0.15
+        );
+
+
+    if (
+        Math.abs(
+            toiletDoor.rotation.y -
+            targetRotation
+        ) < 0.01
+    ) {
+
+        toiletDoor.rotation.y =
+            targetRotation;
+
+        toiletDoorAnimating =
+            false;
+
+    }
+
+}
+
+
+// ========================================
+// TOALETT
+// ========================================
+
+function createToilet(
+    x,
+    y,
+    z
+) {
+
+    const whiteMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xe8e8e2,
+            roughness: 0.7
+        });
+
+
+    const base =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.65,
+                0.75,
+                0.55,
+                20
+            ),
+            whiteMaterial
+        );
+
+    base.position.set(
+        x,
+        y + 0.28,
+        z
+    );
+
+    toiletRoom.add(
+        base
+    );
+
+
+    const bowl =
+        new THREE.Mesh(
+            new THREE.TorusGeometry(
+                0.48,
+                0.16,
+                10,
+                20
+            ),
+            whiteMaterial
+        );
+
+    bowl.rotation.x =
+        Math.PI / 2;
+
+    bowl.position.set(
+        x,
+        y + 0.58,
+        z
+    );
+
+    toiletRoom.add(
+        bowl
+    );
+
+
+    const tank =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                0.9,
+                0.9,
+                0.35
+            ),
+            whiteMaterial
+        );
+
+    tank.position.set(
+        x,
+        y + 0.75,
+        z - 0.45
+    );
+
+    toiletRoom.add(
+        tank
+    );
+
+
+    const seat =
+        new THREE.Mesh(
+            new THREE.TorusGeometry(
+                0.42,
+                0.07,
+                8,
+                20
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0xd5d1c6,
+                roughness: 0.8
+            })
+        );
+
+    seat.rotation.x =
+        Math.PI / 2;
+
+    seat.position.set(
+        x,
+        y + 0.68,
+        z
+    );
+
+    toiletRoom.add(
+        seat
+    );
+
+}
+
+
+// ========================================
+// HANDFASTE
+// ========================================
+
+function createSink(
+    x,
+    y,
+    z
+) {
+
+    const whiteMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0xe5e2da,
+            roughness: 0.7
+        });
+
+
+    const sink =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.5,
+                0.35,
+                0.65
+            ),
+            whiteMaterial
+        );
+
+    sink.position.set(
+        x,
+        y + 1.1,
+        z
+    );
+
+    toiletRoom.add(
+        sink
+    );
+
+
+    const pedestal =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                0.45,
+                1.1,
+                0.45
+            ),
+            whiteMaterial
+        );
+
+    pedestal.position.set(
+        x,
+        y + 0.55,
+        z
+    );
+
+    toiletRoom.add(
+        pedestal
+    );
+
+
+    const faucet =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.06,
+                0.06,
+                0.45,
+                12
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x777777,
+                metalness: 0.8,
+                roughness: 0.3
+            })
+        );
+
+    faucet.position.set(
+        x,
+        y + 1.48,
+        z - 0.15
+    );
+
+    toiletRoom.add(
+        faucet
+    );
+
+}
+
+
+// ========================================
+// SPEGEL
+// ========================================
+
+function createBathroomMirror(
+    x,
+    y,
+    z
+) {
+
+    const frame =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.7,
+                2.1,
+                0.12
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x5b4634,
+                roughness: 0.8
+            })
+        );
+
+    frame.position.set(
+        x,
+        y,
+        z + 0.15
+    );
+
+    toiletRoom.add(
+        frame
+    );
+
+
+    const mirror =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.4,
+                1.8,
+                0.05
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x6f8f99,
+                metalness: 0.7,
+                roughness: 0.15
+            })
+        );
+
+    mirror.position.set(
+        x,
+        y,
+        z + 0.22
+    );
+
+    toiletRoom.add(
+        mirror
+    );
+
+}
+
+
+// ========================================
+// TOALETTPAPPER
+// ========================================
+
+function createToiletPaper(
+    x,
+    y,
+    z
+) {
+
+    const holder =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.16,
+                0.16,
+                0.18,
+                16
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x777777,
+                metalness: 0.7
+            })
+        );
+
+    holder.rotation.x =
+        Math.PI / 2;
+
+    holder.position.set(
+        x,
+        y,
+        z
+    );
+
+    toiletRoom.add(
+        holder
+    );
+
+
+    const paper =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.32,
+                0.32,
+                0.25,
+                20
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0xf4f1e8,
+                roughness: 1
+            })
+        );
+
+    paper.rotation.z =
+        Math.PI / 2;
+
+    paper.position.set(
+        x,
+        y,
+        z + 0.18
+    );
+
+    toiletRoom.add(
+        paper
+    );
+
+}
+
+
+// ========================================
+// SKAPA TOALETTEN
+// ========================================
+
+createToiletRoom();
 
 // ========================================
 // RESIZE
@@ -8427,6 +9348,7 @@ updateChairCollision();
 
 updateOfficeDoor();
 
+updateToiletDoor();
 
 
 // ====================================
