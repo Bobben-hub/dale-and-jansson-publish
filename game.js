@@ -5758,17 +5758,10 @@ for (
 
 
 // ========================================
-// OLD SCHOOL BLOCK COMPUTER
+// OLD SCHOOL BLOCK COMPUTER - OPTIMERAD
 // ========================================
 
-function createComputer(
-    x,
-    y,
-    z
-) {
-
-    // Bordsskivans höjd
-    y += 0.89;
+function createComputer(x, y, z) {
 
     // ====================================
     // MATERIAL
@@ -5786,75 +5779,97 @@ function createComputer(
             roughness: 0.9
         });
 
-    const screenMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x161918,
-            roughness: 0.5
-        });
-
     const screenGlassMaterial =
         new THREE.MeshStandardMaterial({
             color: 0x24352f,
             roughness: 0.3,
-            metalness: 0.05,
             emissive: 0x10251d,
-            emissiveIntensity: 0.35
+            emissiveIntensity: 0.2
         });
 
     const blackMaterial =
         new THREE.MeshStandardMaterial({
-            color: 0xE5D3B3,
-            roughness: 0.65
+            color: 0x252525,
+            roughness: 0.7
         });
+
+
+    // ====================================
+    // HJÄLPFUNKTION
+    // ====================================
+
+    function box(
+        width,
+        height,
+        depth,
+        px,
+        py,
+        pz,
+        material
+    ) {
+
+        const mesh =
+            new THREE.Mesh(
+                new THREE.BoxGeometry(
+                    width,
+                    height,
+                    depth
+                ),
+                material
+            );
+
+        mesh.position.set(
+            px,
+            py,
+            pz
+        );
+
+        mesh.castShadow = false;
+        mesh.receiveShadow = false;
+
+        scene.add(mesh);
+
+        return mesh;
+    }
 
 
     // ====================================
     // CRT-SKÄRM
     // ====================================
 
-    const monitor =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                2.0,
-                1.65,
-                0.8
-            ),
-            computerCaseMaterial
-        );
+    const monitorY =
+        y + 0.90;
 
-    monitor.position.set(
-        x+ 0.1,
-        y,
-        z
-    );
 
-    scene.add(
-        monitor
+    // Hela CRT-lådan
+
+    box(
+        2.0,
+        1.65,
+        0.8,
+
+        x + 0.1,
+        monitorY,
+        z,
+
+        computerCaseMaterial
     );
 
 
     // ====================================
-    // TJOCK FRAMKANT
+    // SKÄRMRAM
     // ====================================
 
-    const screenFrame =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                1.55,
-                1.15,
-                0.10
-            ),
-            computerDarkMaterial
-        );
+    box(
+        1.55,
+        1.15,
+        0.10,
 
-    screenFrame.position.set(
         x,
-        y + 0.05,
-        z + 0.43
-    );
+        monitorY + 0.05,
+        z + 0.43,
 
-    scene.add(
-        screenFrame
+        computerDarkMaterial
     );
 
 
@@ -5862,49 +5877,33 @@ function createComputer(
     // CRT-GLAS
     // ====================================
 
-    const glass =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                1.28,
-                0.88,
-                0.06
-            ),
-            screenGlassMaterial
-        );
+    box(
+        1.28,
+        0.88,
+        0.06,
 
-    glass.position.set(
         x,
-        y + 0.05,
-        z + 0.50
-    );
+        monitorY + 0.05,
+        z + 0.50,
 
-    scene.add(
-        glass
+        screenGlassMaterial
     );
 
 
     // ====================================
-    // SKÄRMENS NEDRE PANEL
+    // NEDRE PANEL
     // ====================================
 
-    const lowerPanel =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                1.55,
-                0.30,
-                0.12
-            ),
-            computerDarkMaterial
-        );
+    box(
+        1.55,
+        0.30,
+        0.12,
 
-    lowerPanel.position.set(
         x,
-        y - 0.55,
-        z + 0.46
-    );
+        monitorY - 0.55,
+        z + 0.46,
 
-    scene.add(
-        lowerPanel
+        computerDarkMaterial
     );
 
 
@@ -5918,7 +5917,7 @@ function createComputer(
                 0.08,
                 0.08,
                 0.04,
-                12
+                8
             ),
             blackMaterial
         );
@@ -5928,41 +5927,37 @@ function createComputer(
 
     powerButton.position.set(
         x + 0.52,
-        y - 0.55,
+        monitorY - 0.55,
         z + 0.55
     );
 
-    scene.add(
-        powerButton
-    );
+    powerButton.castShadow = false;
+    powerButton.receiveShadow = false;
+
+    scene.add(powerButton);
 
 
     // ====================================
-    // LITEN LED
+    // LED
     // ====================================
 
-    const led =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                0.08,
-                0.05,
-                0.03
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0x55aa55,
-                emissive: 0x55aa55,
-                emissiveIntensity: 1
-            })
-        );
+    const ledMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x55aa55,
+            emissive: 0x55aa55,
+            emissiveIntensity: 0.5
+        });
 
-    led.position.set(
+    box(
+        0.08,
+        0.05,
+        0.03,
+
         x + 0.30,
-        y - 0.55,
-        z + 0.55
-    );
+        monitorY - 0.55,
+        z + 0.55,
 
-    scene.add(
-        led
+        ledMaterial
     );
 
 
@@ -5970,161 +5965,108 @@ function createComputer(
     // DATORFOT
     // ====================================
 
-    const stand =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                0.65,
-                0.30,
-                0.55
-            ),
-            computerDarkMaterial
-        );
+    box(
+        0.65,
+        0.30,
+        0.55,
 
-    stand.position.set(
         x,
-        y - 0.95,
-        z
+        monitorY - 0.95,
+        z,
+
+        computerDarkMaterial
     );
-
-    scene.add(
-        stand
-    );
-
-
-    // ====================================
-    // GAMMAL DATORLÅDA
-    // ====================================
-
-    const tower =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                0.85,
-                1.35,
-                1.15
-            ),
-            computerCaseMaterial
-        );
-
-    tower.position.set(
-        x + 1.80,
-        y - 2.60,
-        z - 0.15
-    );
-
-    scene.add(
-        tower
-    );
-
-
-    // ====================================
-    // CD / DISKETT-LIKNANDE FACK
-    // ====================================
-
-    const drive =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                0.55,
-                0.10,
-                0.04
-            ),
-            blackMaterial
-        );
-
-    drive.position.set(
-        x + 1.80,
-        y - 2.60,
-        z - 0.15
-    );
-
-    scene.add(
-        drive
-    );
-
-
-
 
 
     // ====================================
     // TANGENTBORD
     // ====================================
 
-    const keyboard =
+    box(
+        1.9,
+        0.12,
+        0.65,
+
+        x,
+        y + 0.04,
+        z + 0.95,
+
+        blackMaterial
+    );
+
+
+    // ====================================
+    // TANGENTER SOM EN ENDA MESH
+    // ====================================
+
+    const keys =
         new THREE.Mesh(
             new THREE.BoxGeometry(
-                1.9,
-                0.12,
-                0.65
+                1.45,
+                0.025,
+                0.34
             ),
-            blackMaterial
+            computerCaseMaterial
         );
 
-    keyboard.position.set(
+    keys.position.set(
         x,
-        y - 0.85,
+        y + 0.11,
         z + 0.95
     );
 
-    keyboard.rotation.x =
-        +0.08;
+    keys.rotation.x =
+        0.08;
 
-    scene.add(
-        keyboard
+    keys.castShadow = false;
+    keys.receiveShadow = false;
+
+    scene.add(keys);
+
+
+    // ====================================
+    // GAMMAL DATORLÅDA
+    // ====================================
+
+    box(
+        0.85,
+        1.35,
+        1.15,
+
+        x + 1.80,
+        0.60,
+        z - 0.15,
+
+        computerCaseMaterial
     );
 
 
     // ====================================
-    // TANGENTER
+    // DISKETTFACK
     // ====================================
 
-    const keyMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0xE5D3B3,
-            roughness: 0.8
-        });
+    box(
+        0.55,
+        0.10,
+        0.04,
 
-    for (
-        let row = 0;
-        row < 3;
-        row++
-    ) {
+        x + 1.80,
+        0.72,
+        z + 0.44,
 
-        for (
-            let col = 0;
-            col < 9;
-            col++
-        ) {
-
-            const key =
-                new THREE.Mesh(
-                    new THREE.BoxGeometry(
-                        0.13,
-                        0.025,
-                        0.10
-                    ),
-                    keyMaterial
-                );
-
-            key.position.set(
-                x - 0.62 +
-                col * 0.155,
-
-                y - 0.77,
-
-                z + 0.78 +
-                row * 0.13
-            );
-
-            scene.add(
-                key
-            );
-
-        }
-
-
-
-    }
+        blackMaterial
+    );
 
 }
+
+
+   
+
+
+
+    
+
+
 
 // ========================================
 // DESK PROPS
@@ -6201,7 +6143,8 @@ function createDeskProps(
     scene.add(
         mousePad
     );
-
+mousePad.castShadow = false;
+mousePad.receiveShadow = false;
 
     // ====================================
     // MUS
@@ -6232,7 +6175,8 @@ function createDeskProps(
     scene.add(
         mouse
     );
-
+mouse.castShadow = false;
+mouse.receiveShadow = false;
 
     // ====================================
     // TANGENTBORD
@@ -6257,7 +6201,8 @@ function createDeskProps(
     scene.add(
         keyboard
     );
-
+keyboard.castShadow = false;
+keyboard.receiveShadow = false;
 
     // ====================================
     // PAPPER
@@ -6285,7 +6230,8 @@ function createDeskProps(
     scene.add(
         paper
     );
-
+paper.castShadow = false;
+paper.receiveShadow = false;
 
     // ====================================
     // KAFFEMUGG
@@ -6311,7 +6257,8 @@ function createDeskProps(
     scene.add(
         mug
     );
-
+mug.castShadow = false;
+mug.receiveShadow = false;
 
     // ====================================
     // MUGGÖRA
@@ -6341,6 +6288,9 @@ function createDeskProps(
     scene.add(
         handle
     );
+    handle.castShadow = false;
+handle.receiveShadow = false;
+    
     
     createOldPhone(
     x - 1.4,
